@@ -1,0 +1,114 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:SchedulerClientApp.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="SchedulerClientApp.Views.MainView"
+             x:DataType="vm:MainViewModel">
+  
+  <Design.DataContext>
+    <!-- This only sets the DataContext for the previewer in an IDE,
+         to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+    <vm:MainViewModel />
+  </Design.DataContext>
+ 
+  <UserControl.Styles>
+    <Style Selector="Label">
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="Foreground" Value="#474747"/>
+    </Style>
+
+    <Style Selector="Button">
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="FontWeight" Value="Bold"/>
+      <Setter Property="Foreground" Value="#474747"/>
+      <Setter Property="Background" Value="#D9D9D9"/>
+      <Setter Property="CornerRadius" Value="6"/>
+      <Setter Property="Margin" Value="10, 0, 10, 0"/>
+    </Style>
+  </UserControl.Styles>
+
+  <!-- Main window -->
+  <Grid RowDefinitions="Auto, *, Auto, Auto"
+        Background="{DynamicResource MediumGrayBrush}">
+
+    <!-- Status panel-->
+    <Grid
+      Grid.Row="0"
+      Height="100"
+      ColumnDefinitions="*, *"
+      Margin="10">
+
+      <!-- Status information -->
+      <Grid
+        Grid.Column="0"
+        ColumnDefinitions="*, *"
+        RowDefinitions="*, *, *, *">
+        <Label Grid.Row="0" Grid.Column="0"> Server connection:</Label>
+        <Label Content="{Binding ServerConnection}" Grid.Row="0" Grid.Column="1" />
+        <Label Grid.Row="1" Grid.Column="0"> Client status: </Label>
+        <Label Content="{Binding ClientStatus}" Grid.Row="1" Grid.Column="1" />
+        <Label Grid.Row="2" Grid.Column="0"> Task assigned: </Label>
+        <Label Content="{Binding TaskAssigned}" Grid.Row="2" Grid.Column="1" />
+        <Label Grid.Row="3" Grid.Column="0"> Task status: </Label>
+        <Label Content="{Binding TaskStatus}" Grid.Row="3" Grid.Column="1" />
+      </Grid>
+
+      <!-- Client machine information -->
+      <Grid
+        Grid.Column="1"
+        ColumnDefinitions="*, *"
+        RowDefinitions="*, *, *, *">
+        <Label Grid.Row="0" Grid.Column="0"> Operating system: </Label>
+        <Label Content="{Binding OperatingSystem}" Grid.Row="0" Grid.Column="1" />
+        <Label Grid.Row="1" Grid.Column="0"> Cluster: </Label>
+        <Label Content="{Binding Cluster}" Grid.Row="1" Grid.Column="1" />
+        <!-- EMPTY LABEL SPACE -->
+        <Label Grid.Row="2" Grid.Column="0"> </Label>
+        <Label Grid.Row="2" Grid.Column="1"> </Label>
+        <!-- EMPTY LABEL SPACE -->
+        <Label Grid.Row="3" Grid.Column="0"> </Label>
+        <Label Grid.Row="3" Grid.Column="1"> </Label>
+      </Grid>
+    </Grid>
+
+    <!-- Log window-->
+    <StackPanel
+        Grid.Row="1">
+    </StackPanel>
+
+    <!-- Client info -->
+    <Grid
+      Grid.Row="2"
+      Height="50"
+      ColumnDefinitions="*, *">
+      <Grid
+        Grid.Column="0"
+        RowDefinitions="*, *"
+        ColumnDefinitions="*, *"
+        Width="400"
+        Margin="10, 0, 0, 0">
+        <Label Grid.Row="0" Grid.Column="0"> Client name: </Label>
+        <Label Content="{Binding ClientName}" Grid.Row="0" Grid.Column="1" />
+        <Label Grid.Row="1" Grid.Column="0"> Client IP: </Label>
+        <Label Content="{Binding ClientIP}" Grid.Row="1" Grid.Column="1" />
+      </Grid>
+
+      <!-- EMPTY GRID SPACE -->
+      <Grid
+        Grid.Column="1">
+      </Grid>
+    </Grid>
+
+    <!-- Buttons bar -->
+    <Grid
+      Grid.Row="3"
+      Height="40"
+      ColumnDefinitions="Auto, *, Auto">
+      <Button Grid.Column="0"> More details </Button>
+      <Button Grid.Column="2"> Reconnect </Button>
+    </Grid>
+  </Grid>
+
+</UserControl>
