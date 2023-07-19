@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,31 +24,7 @@ public class MainViewModel : ViewModelBase, INotifyPropertyChanged
     private string _cluster = "not recognised";
     private string _clientName = "not recognised";
     private string _clientIP = "not recognised";
-
-    public MainViewModel()
-    {
-        // chatgpt
-        //Messages = new ObservableCollection<string>();
-        //Messages.CollectionChanged += Messages_CollectionChanged;
-
-        //_window = window;
-
-        // Button Handler to activate function
-         ButtonTestFunctionCommand = ReactiveCommand.Create(ButtonTestFunction);
-
-        // Testing code to change variable
-        Task.Run(async () =>
-        {
-            await Task.Delay(5000);
-            ServerConnection = "online";
-        });
-
-        // Testing iterable text box
-        //AddMessage("First message.");
-        
-        // Testing full text box
-        ReceivedMessages += "New message \n";
-    }
+    private Avalonia.Vector _scrollOffset = new Avalonia.Vector();
 
     public string ServerConnection
     {
@@ -153,20 +130,25 @@ public class MainViewModel : ViewModelBase, INotifyPropertyChanged
         }
     }
 
+    public Avalonia.Vector scrollOffset
+    {
+        get => _scrollOffset;
+        set
+        {
+            if (_scrollOffset == value)
+                return;
+
+            _scrollOffset = value;
+            OnPropertyChanged(nameof(scrollOffset));
+        }
+    }
+
     public event PropertyChangedEventHandler ? PropertyChanged;
 
     protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
-
-    //protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
-    //{
-    //    if (EqualityComparer<T>.Default.Equals(field, value)) return false;
-    //    field = value;
-    //    OnPropertyChanged(propertyName);
-    //    return true;
-    //}
 
     // Button command handler
     public ICommand ? ButtonTestFunctionCommand { get; }
@@ -179,10 +161,10 @@ public class MainViewModel : ViewModelBase, INotifyPropertyChanged
         // Testing full text box
         ReceivedMessages += "New message \n";
 
+        //// Testing chatgpt scrolling
         //AddMessage("New message \n");
 
-        //Thread.Sleep(10);
-        //Dispatcher.UIThread.InvokeAsync(_window.ScrollTextToEnd);
+        scrollOffset = new Avalonia.Vector(-1000, -1000);
     }
 
     // Testing full text variable
@@ -200,9 +182,25 @@ public class MainViewModel : ViewModelBase, INotifyPropertyChanged
         }
     }
 
-    /// <summary>
-    ///  ChatGPS solution for autoscrolling
-    /// </summary>
+
+
+
+
+    //public event EventHandler? MessageAdded;
+
+    //public void AddMessage(string message)
+    //{
+    //    Messages.Add(message);
+    //}
+
+    //private void Messages_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    //{
+    //    MessageAdded?.Invoke(this, EventArgs.Empty);
+    //}
+
+    ///// <summary>
+    /////  ChatGPS solution for autoscrolling
+    ///// </summary>
     //private ObservableCollection<string> _messages = new ObservableCollection<string>();
     //public ObservableCollection<string> Messages
     //{
@@ -217,16 +215,23 @@ public class MainViewModel : ViewModelBase, INotifyPropertyChanged
     //    }
     //}
 
-    //private void Messages_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-    //{
-    //    MessageAdded?.Invoke(this, EventArgs.Empty);
-    //}
+    public MainViewModel()
+    {
+        //// chatgpt
+        //Messages = new ObservableCollection<string>();
+        //Messages.CollectionChanged += Messages_CollectionChanged;
 
-    //public event EventHandler ? MessageAdded;
+        // Button Handler to activate function
+        ButtonTestFunctionCommand = ReactiveCommand.Create(ButtonTestFunction);
 
-    //public void AddMessage(string message)
-    //{
-    //    Messages.Add(message);
-    //}
+        // Testing code to change variable
+        Task.Run(async () =>
+        {
+            await Task.Delay(5000);
+            ServerConnection = "online";
+        });
 
+        // Testing full text box
+        ReceivedMessages += "New message \n";
+    }
 }
