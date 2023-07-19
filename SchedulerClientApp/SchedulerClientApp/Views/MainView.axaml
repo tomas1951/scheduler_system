@@ -85,23 +85,22 @@
       BorderBrush="Black"
       CornerRadius="10">
       <ScrollViewer
+        Name="scrollViewer1"
         Margin="10, 0, 10, 0"
-        x:Name="ScrollViewer1"
         Height="230"
         VerticalScrollBarVisibility="Auto"
-        HorizontalScrollBarVisibility="Auto"
-        Name="scrollViewer">
-
+        Offset="{Binding scrollOffset}"
+        HorizontalScrollBarVisibility="Auto">
         <TextBlock
           Name="logTextBlock"
           VerticalAlignment="Top"
           TextWrapping="Wrap"
           Text="{Binding ReceivedMessages}">
         </TextBlock>
-        
+
       </ScrollViewer>
     </Border>
-
+    
     <!-- CLIENT INFO -->
     <Grid
       Grid.Row="2"
