@@ -1,11 +1,14 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl x:Class="SchedulerClientApp.Views.MainView"
+             x:DataType="vm:MainViewModel"
+             xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:SchedulerClientApp.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="SchedulerClientApp.Views.MainView"
-             x:DataType="vm:MainViewModel">
+             Width="800"
+             Height="450"
+             x:CompileBindings="True">
   
   <Design.DataContext>
     <!-- This only sets the DataContext for the previewer in an IDE,
@@ -29,7 +32,7 @@
     </Style>
   </UserControl.Styles>
 
-  <!-- Main window -->
+  <!-- MAIN WINDOW -->
   <Grid RowDefinitions="Auto, *, Auto, Auto"
         Background="{DynamicResource MediumGrayBrush}">
 
@@ -40,7 +43,7 @@
       ColumnDefinitions="*, *"
       Margin="10">
 
-      <!-- Status information -->
+      <!-- Status panel - status information -->
       <Grid
         Grid.Column="0"
         ColumnDefinitions="*, *"
@@ -55,7 +58,7 @@
         <Label Content="{Binding TaskStatus}" Grid.Row="3" Grid.Column="1" />
       </Grid>
 
-      <!-- Client machine information -->
+      <!-- Status panel - client machine information -->
       <Grid
         Grid.Column="1"
         ColumnDefinitions="*, *"
@@ -64,21 +67,42 @@
         <Label Content="{Binding OperatingSystem}" Grid.Row="0" Grid.Column="1" />
         <Label Grid.Row="1" Grid.Column="0"> Cluster: </Label>
         <Label Content="{Binding Cluster}" Grid.Row="1" Grid.Column="1" />
-        <!-- EMPTY LABEL SPACE -->
+        <!-- empty label space -->
         <Label Grid.Row="2" Grid.Column="0"> </Label>
         <Label Grid.Row="2" Grid.Column="1"> </Label>
-        <!-- EMPTY LABEL SPACE -->
+        <!-- empty label space -->
         <Label Grid.Row="3" Grid.Column="0"> </Label>
         <Label Grid.Row="3" Grid.Column="1"> </Label>
       </Grid>
     </Grid>
 
-    <!-- Log window-->
-    <StackPanel
-        Grid.Row="1">
-    </StackPanel>
+    <!-- LOG WINDOW -->
+    <Border
+      Grid.Row="1"
+      Margin="5"
+      Height="230"
+      BorderThickness="1"
+      BorderBrush="Black"
+      CornerRadius="10">
+      <ScrollViewer
+        Margin="10, 0, 10, 0"
+        x:Name="ScrollViewer1"
+        Height="230"
+        VerticalScrollBarVisibility="Auto"
+        HorizontalScrollBarVisibility="Auto"
+        Name="scrollViewer">
 
-    <!-- Client info -->
+        <TextBlock
+          Name="logTextBlock"
+          VerticalAlignment="Top"
+          TextWrapping="Wrap"
+          Text="{Binding ReceivedMessages}">
+        </TextBlock>
+        
+      </ScrollViewer>
+    </Border>
+
+    <!-- CLIENT INFO -->
     <Grid
       Grid.Row="2"
       Height="50"
@@ -95,18 +119,20 @@
         <Label Content="{Binding ClientIP}" Grid.Row="1" Grid.Column="1" />
       </Grid>
 
-      <!-- EMPTY GRID SPACE -->
+      <!-- empty space -->
       <Grid
         Grid.Column="1">
       </Grid>
     </Grid>
 
-    <!-- Buttons bar -->
+    <!-- BUTTONS BAR -->
     <Grid
       Grid.Row="3"
       Height="40"
       ColumnDefinitions="Auto, *, Auto">
-      <Button Grid.Column="0"> More details </Button>
+      <Button 
+        Command="{Binding ButtonTestFunctionCommand}"
+        Grid.Column="0"> More details </Button>
       <Button Grid.Column="2"> Reconnect </Button>
     </Grid>
   </Grid>

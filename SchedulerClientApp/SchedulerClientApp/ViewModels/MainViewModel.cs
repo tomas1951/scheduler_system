@@ -1,7 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using Avalonia.Controls;
+using Avalonia.Threading;
+using ReactiveUI;
+using SchedulerClientApp.Views;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace SchedulerClientApp.ViewModels;
 
@@ -15,7 +23,32 @@ public class MainViewModel : ViewModelBase, INotifyPropertyChanged
     private string _cluster = "not recognised";
     private string _clientName = "not recognised";
     private string _clientIP = "not recognised";
-    
+
+    public MainViewModel()
+    {
+        // chatgpt
+        //Messages = new ObservableCollection<string>();
+        //Messages.CollectionChanged += Messages_CollectionChanged;
+
+        //_window = window;
+
+        // Button Handler to activate function
+         ButtonTestFunctionCommand = ReactiveCommand.Create(ButtonTestFunction);
+
+        // Testing code to change variable
+        Task.Run(async () =>
+        {
+            await Task.Delay(5000);
+            ServerConnection = "online";
+        });
+
+        // Testing iterable text box
+        //AddMessage("First message.");
+        
+        // Testing full text box
+        ReceivedMessages += "New message \n";
+    }
+
     public string ServerConnection
     {
         get => _serverConnection;
@@ -119,28 +152,81 @@ public class MainViewModel : ViewModelBase, INotifyPropertyChanged
             OnPropertyChanged(nameof(ClientIP));
         }
     }
-    
-    public MainViewModel()
-    {
-        Task.Run(async () =>
-        {
-            await Task.Delay(5000);
-            ServerConnection = "online";
-        });
-    }
 
-    public event PropertyChangedEventHandler? PropertyChanged;
+    public event PropertyChangedEventHandler ? PropertyChanged;
 
     protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
+    //protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
+    //{
+    //    if (EqualityComparer<T>.Default.Equals(field, value)) return false;
+    //    field = value;
+    //    OnPropertyChanged(propertyName);
+    //    return true;
+    //}
+
+    // Button command handler
+    public ICommand ? ButtonTestFunctionCommand { get; }
+
+    private void ButtonTestFunction()
     {
-        if (EqualityComparer<T>.Default.Equals(field, value)) return false;
-        field = value;
-        OnPropertyChanged(propertyName);
-        return true;
+        // Test changing a variable
+        ClientStatus = "connecting";
+
+        // Testing full text box
+        ReceivedMessages += "New message \n";
+
+        //AddMessage("New message \n");
+
+        //Thread.Sleep(10);
+        //Dispatcher.UIThread.InvokeAsync(_window.ScrollTextToEnd);
     }
+
+    // Testing full text variable
+    private string _ReceivedMessages = string.Empty;
+
+    public string ReceivedMessages
+    {
+        get => _ReceivedMessages;
+        set
+        {
+            if (_ReceivedMessages == value)
+                return;
+            _ReceivedMessages = value;
+            OnPropertyChanged(nameof(ReceivedMessages));
+        }
+    }
+
+    /// <summary>
+    ///  ChatGPS solution for autoscrolling
+    /// </summary>
+    //private ObservableCollection<string> _messages = new ObservableCollection<string>();
+    //public ObservableCollection<string> Messages
+    //{
+    //    get => _messages;
+    //    set
+    //    {
+    //        if (_messages != value)
+    //        {
+    //            _messages = value;
+    //            OnPropertyChanged();
+    //        }
+    //    }
+    //}
+
+    //private void Messages_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    //{
+    //    MessageAdded?.Invoke(this, EventArgs.Empty);
+    //}
+
+    //public event EventHandler ? MessageAdded;
+
+    //public void AddMessage(string message)
+    //{
+    //    Messages.Add(message);
+    //}
+
 }
