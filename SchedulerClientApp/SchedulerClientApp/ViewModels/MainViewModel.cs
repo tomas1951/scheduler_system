@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Threading;
 using ReactiveUI;
+using SchedulerClientApp.Services;
 using SchedulerClientApp.Views;
 using System;
 using System.Collections.Generic;
@@ -24,7 +25,9 @@ public class MainViewModel : ViewModelBase, INotifyPropertyChanged
     private string _cluster = "not recognised";
     private string _clientName = "not recognised";
     private string _clientIP = "not recognised";
+
     private Avalonia.Vector _scrollOffset = new Avalonia.Vector();
+    //private LogService _logService;
 
     public string ServerConnection
     {
@@ -130,6 +133,8 @@ public class MainViewModel : ViewModelBase, INotifyPropertyChanged
         }
     }
 
+    //public LogService LogServiceRef { get; set; }
+
     public Avalonia.Vector scrollOffset
     {
         get => _scrollOffset;
@@ -143,7 +148,7 @@ public class MainViewModel : ViewModelBase, INotifyPropertyChanged
         }
     }
 
-    public event PropertyChangedEventHandler ? PropertyChanged;
+    public new event PropertyChangedEventHandler ? PropertyChanged;
 
     protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
@@ -152,6 +157,11 @@ public class MainViewModel : ViewModelBase, INotifyPropertyChanged
 
     // Button command handler
     public ICommand ? ButtonTestFunctionCommand { get; }
+
+    public void Function(string message)
+    {
+        ReceivedMessages += (message + "\n");
+    }
 
     private void ButtonTestFunction()
     {
@@ -162,9 +172,8 @@ public class MainViewModel : ViewModelBase, INotifyPropertyChanged
         ReceivedMessages += "New message \n";
 
         //// Testing chatgpt scrolling
-        //AddMessage("New message \n");
-
-        scrollOffset = new Avalonia.Vector(-1000, -1000);
+        //AddMessage("New message \n
+        //LogServiceRef.Log("sprava do logu po stlaceni buttonu");
     }
 
     // Testing full text variable
@@ -182,44 +191,9 @@ public class MainViewModel : ViewModelBase, INotifyPropertyChanged
         }
     }
 
-
-
-
-
-    //public event EventHandler? MessageAdded;
-
-    //public void AddMessage(string message)
-    //{
-    //    Messages.Add(message);
-    //}
-
-    //private void Messages_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-    //{
-    //    MessageAdded?.Invoke(this, EventArgs.Empty);
-    //}
-
-    ///// <summary>
-    /////  ChatGPS solution for autoscrolling
-    ///// </summary>
-    //private ObservableCollection<string> _messages = new ObservableCollection<string>();
-    //public ObservableCollection<string> Messages
-    //{
-    //    get => _messages;
-    //    set
-    //    {
-    //        if (_messages != value)
-    //        {
-    //            _messages = value;
-    //            OnPropertyChanged();
-    //        }
-    //    }
-    //}
-
     public MainViewModel()
     {
-        //// chatgpt
-        //Messages = new ObservableCollection<string>();
-        //Messages.CollectionChanged += Messages_CollectionChanged;
+        //LogServiceRef = logService;
 
         // Button Handler to activate function
         ButtonTestFunctionCommand = ReactiveCommand.Create(ButtonTestFunction);
@@ -232,6 +206,6 @@ public class MainViewModel : ViewModelBase, INotifyPropertyChanged
         });
 
         // Testing full text box
-        ReceivedMessages += "New message \n";
+        ReceivedMessages += "Scheduler Client App started.\n";
     }
 }
