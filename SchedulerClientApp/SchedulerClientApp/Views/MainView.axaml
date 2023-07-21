@@ -89,7 +89,6 @@
         Margin="10, 0, 10, 0"
         Height="230"
         VerticalScrollBarVisibility="Auto"
-        Offset="{Binding scrollOffset}"
         HorizontalScrollBarVisibility="Auto">
         <TextBlock
           Name="logTextBlock"
@@ -97,7 +96,6 @@
           TextWrapping="Wrap"
           Text="{Binding ReceivedMessages}">
         </TextBlock>
-
       </ScrollViewer>
     </Border>
     
@@ -129,10 +127,14 @@
       Grid.Row="3"
       Height="40"
       ColumnDefinitions="Auto, *, Auto">
+      <!-- More details button -->
       <Button 
-        Command="{Binding ButtonTestFunctionCommand}"
+        Command="{Binding MoreDetailsButtonCommand}"
         Grid.Column="0"> More details </Button>
-      <Button Grid.Column="2"> Reconnect </Button>
+      <!-- Reconnect button -->
+      <Button 
+        Command="{Binding ReconnectButtonCommand}"
+        Grid.Column="2"> Reconnect </Button>
     </Grid>
   </Grid>
 
