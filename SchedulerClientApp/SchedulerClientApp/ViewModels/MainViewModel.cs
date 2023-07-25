@@ -1,18 +1,21 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using ReactiveUI;
 using System;
-using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Input;
+using SchedulerClientApp.Modules;
+using System.Net.Sockets;
+using System.Threading.Tasks;
 
 namespace SchedulerClientApp.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
+    // Properties bound to the labels in User Interface
     [ObservableProperty]
     private string serverConnection = "offline";
     [ObservableProperty]
-    private string clientStatus = "Idle";
+    private string clientStatus = "idle...";
     [ObservableProperty]
     private bool taskAssigned = false;
     [ObservableProperty]
@@ -27,70 +30,100 @@ public partial class MainViewModel : ObservableObject
     private string clientIP = "not recognised";
     [ObservableProperty]
     private string _ReceivedMessages = string.Empty;
-    // Testing Timer
-    private Timer? aTimer;
-    // Button command handler
+    // Button handlers
     public ICommand? MoreDetailsButtonCommand { get; set; }
-    // Button command handler
     public ICommand? ReconnectButtonCommand { get; set; }
+    // Tcp connection
+    private TcpModule? TcpModuleInstance;
+    private Timer? ReconnectingTimer;
 
     public MainViewModel()
     {
-        Init();
+        ConsoleLog("Scheduler client app started.");
 
-        SetTimer();
+        InitHandlers();
+        SetReconnectingTimer();
+        CreateTcpConnection();
 
-        // Testing code to change variable
+        //// Testing code to change variable
         Task.Run(async () =>
         {
             await Task.Delay(3000);
-            ServerConnection = "online";
+            //ServerConnection = "online";
         });
-
-        // Testing full text box
-        ReceivedMessages += "Scheduler Client App started.\n";
     }
 
-    public void Init()
+    public void InitHandlers()
     {
         // More Detains Button Handler
         MoreDetailsButtonCommand = ReactiveCommand.Create(MoreDetailsButtonFunction);
         // Reconnect Button Handler
         ReconnectButtonCommand = ReactiveCommand.Create(ReconnectButtonFunction);
-        // Initialize Testing Timer
     }
 
-    private void OnTimedEvent(object? source, ElapsedEventArgs e)
+    private void CreateTcpConnection()
     {
-        ReceivedMessages += (("The Elapsed event was raised at {0:HH:mm:ss.fff}",
-                          e.SignalTime) + "\n");
-    }
-    
-    private void SetTimer()
-    {
-        // Create a timer with a two second interval.
-        aTimer = new Timer(2000);
-        // Hook up the Elapsed event for the timer. 
-        aTimer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
-        aTimer.AutoReset = true;
-        aTimer.Enabled = true;
+        ConsoleLog("Connecting to a server...");
+        try
+        {
+            TcpModuleInstance = new TcpModule("localhost", 1234);
+        }
+        catch (SocketException)
+        {
+            ConsoleLog("Server is offline.");
+        }
+        catch (Exception ex)
+        {
+            ConsoleLog(string.Format("Exception: {0} - {1}", ex.GetType().Name, ex.Message));
+        }
+
+        if (TcpModuleInstance is not null && TcpModuleInstance.IsConnected())
+        {
+            ConsoleLog("Connection successful");
+            ServerConnection = "online";
+        }
+        else
+        {
+            ConsoleLog("Connection failed.\n");
+            ServerConnection = "failed";
+        }
     }
 
-    // Testing function
-    public void Function(string message)
+    private void SetReconnectingTimer()
     {
-        ReceivedMessages += (message + "\n");
+        ReconnectingTimer = new Timer(15000);
+        ReconnectingTimer.Elapsed += new ElapsedEventHandler(OnReconnectingTimer);
+        ReconnectingTimer.AutoReset = true;
+        ReconnectingTimer.Enabled = true;
+    }
+
+    private void OnReconnectingTimer(object? source, ElapsedEventArgs e)
+    {
+        if (ServerConnection == "offline" || ServerConnection == "failed")
+        {
+            ServerConnection = "reconnecting...";
+            ConsoleLog("Auto-reconnecting: ", false);
+            CreateTcpConnection();
+        }
     }
 
     private void MoreDetailsButtonFunction()
     {
-        // Testing full text box
-        ReceivedMessages += "More Details button pressed.\n";
+        ConsoleLog("More Details button pressed.");
     }
 
     private void ReconnectButtonFunction()
     {
-        // Testing full text box
-        ReceivedMessages += "Reconnect button pressed.\n";
+        ConsoleLog("Reconnect button pressed.");
+        CreateTcpConnection();
+    }
+
+    private void ConsoleLog(string message, bool endl = true)
+    {
+        if (endl)
+        {
+            message += "\n";
+        }
+        ReceivedMessages += (message);
     }
 }
