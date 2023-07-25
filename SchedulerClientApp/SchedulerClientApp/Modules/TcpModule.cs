@@ -13,6 +13,7 @@ namespace SchedulerClientApp.Modules
         public string Hostname;
         public int Port;
         public TcpClient TcpConnection;
+        public NetworkStream ClientSockStream;
         public StreamReader ClientStreamReader;
         public StreamWriter ClientStreamWriter;
 
@@ -22,14 +23,31 @@ namespace SchedulerClientApp.Modules
             Port = port;
 
             TcpConnection = new TcpClient(Hostname, Port);
-            NetworkStream clientSockStream = TcpConnection.GetStream();
-            ClientStreamReader = new StreamReader(clientSockStream);
-            ClientStreamWriter = new StreamWriter(clientSockStream);
+            ClientSockStream = TcpConnection.GetStream();
+            ClientStreamReader = new StreamReader(ClientSockStream);
+            ClientStreamWriter = new StreamWriter(ClientSockStream);
         }
 
         public bool IsConnected()
         {
             return TcpConnection.Connected;
+        }
+
+        public void Disconnect()
+        {
+            TcpConnection.GetStream().Close();
+            TcpConnection.Close();
+        }
+
+        public bool SendMessage(byte[] message)
+        {
+            if (IsConnected())
+            {
+                //ClientStreamWriter.WriteLine(message);
+                ClientSockStream.Write(message, 0, message.Length);
+                return true;
+            }
+            return false;
         }
     }
 }

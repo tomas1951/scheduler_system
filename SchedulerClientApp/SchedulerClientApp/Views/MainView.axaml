@@ -49,7 +49,8 @@
         ColumnDefinitions="*, *"
         RowDefinitions="*, *, *, *">
         <Label Grid.Row="0" Grid.Column="0"> Server connection:</Label>
-        <Label Content="{Binding ServerConnection}" Grid.Row="0" Grid.Column="1" />
+        <Label Content="{Binding ServerConnection}" Foreground="Green"
+               Grid.Row="0" Grid.Column="1" />
         <Label Grid.Row="1" Grid.Column="0"> Client status: </Label>
         <Label Content="{Binding ClientStatus}" Grid.Row="1" Grid.Column="1" />
         <Label Grid.Row="2" Grid.Column="0"> Task assigned: </Label>

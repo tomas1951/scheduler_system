@@ -6,12 +6,16 @@ using System.Windows.Input;
 using SchedulerClientApp.Modules;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using System.Text;
 
 namespace SchedulerClientApp.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
-    // Properties bound to the labels in User Interface
+    // These properties are bound to the labels in User Interface
+    // Note: 
+    // Capital letters properties are auto-generated and using 
+    // non-capital variables in code will lead to errors
     [ObservableProperty]
     private string serverConnection = "offline";
     [ObservableProperty]
@@ -36,6 +40,7 @@ public partial class MainViewModel : ObservableObject
     // Tcp connection
     private TcpModule? TcpModuleInstance;
     private Timer? ReconnectingTimer;
+    private Timer? StatusTimer;
 
     public MainViewModel()
     {
@@ -43,6 +48,7 @@ public partial class MainViewModel : ObservableObject
 
         InitHandlers();
         SetReconnectingTimer();
+        SetStatusTimer();
         CreateTcpConnection();
 
         //// Testing code to change variable
@@ -66,7 +72,7 @@ public partial class MainViewModel : ObservableObject
         ConsoleLog("Connecting to a server...");
         try
         {
-            TcpModuleInstance = new TcpModule("localhost", 1234);
+            TcpModuleInstance = new TcpModule("127.0.0.1", 1234);
         }
         catch (SocketException)
         {
@@ -89,6 +95,29 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
+    private void SetStatusTimer()
+    {
+        StatusTimer = new Timer(10000);
+        StatusTimer.Elapsed += new ElapsedEventHandler(OnStatusTimer);
+        StatusTimer.AutoReset = true;
+        StatusTimer.Enabled = true;
+    }
+
+    private void OnStatusTimer(object? source, ElapsedEventArgs e)
+    {
+        if (ServerConnection == "online")
+        {
+            string textToSend = DateTime.Now.ToString();
+            byte[] bytesToSend = Encoding.ASCII.GetBytes(textToSend);
+            ConsoleLog("Sending : " + textToSend);
+            if (TcpModuleInstance?.SendMessage(bytesToSend) == false)
+            {
+                ConsoleLog("Server is offline.");
+                ServerConnection = "offline";
+            }
+        }
+    }
+
     private void SetReconnectingTimer()
     {
         ReconnectingTimer = new Timer(15000);
@@ -102,7 +131,7 @@ public partial class MainViewModel : ObservableObject
         if (ServerConnection == "offline" || ServerConnection == "failed")
         {
             ServerConnection = "reconnecting...";
-            ConsoleLog("Auto-reconnecting: ", false);
+            ConsoleLog("Auto-reconnecting: ");
             CreateTcpConnection();
         }
     }
@@ -112,18 +141,29 @@ public partial class MainViewModel : ObservableObject
         ConsoleLog("More Details button pressed.");
     }
 
-    private void ReconnectButtonFunction()
+    private async Task ReconnectButtonFunction()
     {
         ConsoleLog("Reconnect button pressed.");
+        await Task.Run(() =>
+        {
+            TcpModuleInstance?.Disconnect();
+        });
+        ConsoleLog("Disconnected.");
         CreateTcpConnection();
     }
 
-    private void ConsoleLog(string message, bool endl = true)
+    private void ConsoleLog(string message, bool endl = true, bool date = true)
     {
         if (endl)
         {
             message += "\n";
         }
-        ReceivedMessages += (message);
+        if (date)
+        {
+            DateTime currentDateTime = DateTime.Now;
+            string formattedDate = currentDateTime.ToString("MM/dd/yyyy HH:mm:ss");
+            message = (formattedDate + "> " + message);
+        }
+        ReceivedMessages += message;
     }
 }
