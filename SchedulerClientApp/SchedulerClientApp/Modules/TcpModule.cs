@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Svg;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -48,6 +49,44 @@ namespace SchedulerClientApp.Modules
                 return true;
             }
             return false;
+        }
+
+        public bool SendFile(string path)
+        {
+            if (!File.Exists(path))
+            {
+                return false;
+            }
+            if (!IsConnected())
+            {
+                return false;
+            }           
+            try
+            {
+                byte[] bytes = File.ReadAllBytes(path);
+                ClientStreamWriter.WriteLine(bytes.Length.ToString());
+                ClientStreamWriter.Flush();
+
+                string ? response = ClientStreamReader.ReadLine();
+                if (response != "OK")
+                    return false;
+                ClientStreamWriter.WriteLine(path);
+                ClientStreamWriter.Flush();
+                response = ClientStreamReader.ReadLine();
+                if (response != "OK")
+                    return false;
+
+                TcpConnection.Client.SendFile(path);
+                response = ClientStreamReader.ReadLine();
+                if (response != "OK")
+                    return false;
+                //ClientSockStream.Write(bytes, 0, bytes.Length);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            return true;
         }
     }
 }

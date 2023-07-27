@@ -45,18 +45,12 @@ public partial class MainViewModel : ObservableObject
     public MainViewModel()
     {
         ConsoleLog("Scheduler client app started.");
-
         InitHandlers();
         SetReconnectingTimer();
         SetStatusTimer();
         CreateTcpConnection();
 
-        //// Testing code to change variable
-        Task.Run(async () =>
-        {
-            await Task.Delay(3000);
-            //ServerConnection = "online";
-        });
+        //TcpModuleInstance?.SendFile("C:\\Users\\Admin\\Desktop\\scheduler_system\\SchedulerClientApp\\Data\\input.txt");
     }
 
     public void InitHandlers()
@@ -107,14 +101,17 @@ public partial class MainViewModel : ObservableObject
     {
         if (ServerConnection == "online")
         {
-            string textToSend = DateTime.Now.ToString();
-            byte[] bytesToSend = Encoding.ASCII.GetBytes(textToSend);
-            ConsoleLog("Sending : " + textToSend);
-            if (TcpModuleInstance?.SendMessage(bytesToSend) == false)
-            {
-                ConsoleLog("Server is offline.");
-                ServerConnection = "offline";
-            }
+            //string textToSend = DateTime.Now.ToString();
+            //byte[] bytesToSend = Encoding.ASCII.GetBytes(textToSend);
+            //ConsoleLog("Sending : " + textToSend);
+            //if (TcpModuleInstance?.SendMessage(bytesToSend) == false)
+            //{
+            //    ConsoleLog("Server is offline.");
+            //    ServerConnection = "offline";
+            //}
+
+            ConsoleLog("Sending file.");
+            TcpModuleInstance?.SendFile("C:\\Users\\Admin\\Desktop\\scheduler_system\\SchedulerClientApp\\Data\\input.txt");
         }
     }
 
@@ -143,7 +140,6 @@ public partial class MainViewModel : ObservableObject
 
     private async Task ReconnectButtonFunction()
     {
-        ConsoleLog("Reconnect button pressed.");
         await Task.Run(() =>
         {
             TcpModuleInstance?.Disconnect();
