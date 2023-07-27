@@ -51,42 +51,42 @@ namespace SchedulerClientApp.Modules
             return false;
         }
 
-        public bool SendFile(string path)
+        public void SendFile(string path)
         {
+            Console.WriteLine("TESTING CONSOLE");
+
             if (!File.Exists(path))
             {
-                return false;
+                throw new FileNotFoundException();
             }
             if (!IsConnected())
             {
-                return false;
-            }           
-            try
-            {
-                byte[] bytes = File.ReadAllBytes(path);
-                ClientStreamWriter.WriteLine(bytes.Length.ToString());
-                ClientStreamWriter.Flush();
-
-                string ? response = ClientStreamReader.ReadLine();
-                if (response != "OK")
-                    return false;
-                ClientStreamWriter.WriteLine(path);
-                ClientStreamWriter.Flush();
-                response = ClientStreamReader.ReadLine();
-                if (response != "OK")
-                    return false;
-
-                TcpConnection.Client.SendFile(path);
-                response = ClientStreamReader.ReadLine();
-                if (response != "OK")
-                    return false;
-                //ClientSockStream.Write(bytes, 0, bytes.Length);
+                throw new Exception("Not connected");
             }
-            catch (Exception)
+            byte[] bytes = File.ReadAllBytes(path);
+            ClientStreamWriter.WriteLine(bytes.Length.ToString());
+
+            ClientStreamWriter.Flush();
+
+            string? response = ClientStreamReader.ReadLine();
+            if (response != "OK")
             {
-                return false;
+                throw new Exception("Connection lost during communication.");
             }
-            return true;
+            ClientStreamWriter.WriteLine(Path.GetFileName(path));
+            ClientStreamWriter.Flush();
+            response = ClientStreamReader.ReadLine();
+            if (response != "OK")
+            {
+                throw new Exception("Connection lost during communication.");
+            }
+            TcpConnection.Client.SendFile(path);
+            response = ClientStreamReader.ReadLine();
+            if (response != "OK")
+            {
+                throw new Exception("Connection lost during communication.");
+            }
+            //ClientSockStream.Write(bytes, 0, bytes.Length);
         }
     }
 }

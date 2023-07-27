@@ -91,7 +91,7 @@ public partial class MainViewModel : ObservableObject
 
     private void SetStatusTimer()
     {
-        StatusTimer = new Timer(10000);
+        StatusTimer = new Timer(20000);
         StatusTimer.Elapsed += new ElapsedEventHandler(OnStatusTimer);
         StatusTimer.AutoReset = true;
         StatusTimer.Enabled = true;
@@ -99,20 +99,20 @@ public partial class MainViewModel : ObservableObject
 
     private void OnStatusTimer(object? source, ElapsedEventArgs e)
     {
-        if (ServerConnection == "online")
+        if (ServerConnection != "online")
         {
-            //string textToSend = DateTime.Now.ToString();
-            //byte[] bytesToSend = Encoding.ASCII.GetBytes(textToSend);
-            //ConsoleLog("Sending : " + textToSend);
-            //if (TcpModuleInstance?.SendMessage(bytesToSend) == false)
-            //{
-            //    ConsoleLog("Server is offline.");
-            //    ServerConnection = "offline";
-            //}
-
-            ConsoleLog("Sending file.");
-            TcpModuleInstance?.SendFile("C:\\Users\\Admin\\Desktop\\scheduler_system\\SchedulerClientApp\\Data\\input.txt");
+            return;
         }
+        //string textToSend = DateTime.Now.ToString();
+        //byte[] bytesToSend = Encoding.ASCII.GetBytes(textToSend);
+        //ConsoleLog("Sending : " + textToSend);
+        //if (TcpModuleInstance?.SendMessage(bytesToSend) == false)
+        //{
+        //    ConsoleLog("Server is offline.");
+        //    ServerConnection = "offline";
+        //}
+
+
     }
 
     private void SetReconnectingTimer()
@@ -133,9 +133,23 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    private void MoreDetailsButtonFunction()
+    private async Task MoreDetailsButtonFunction()
     {
-        ConsoleLog("More Details button pressed.");
+        await Task.Run(() =>
+        {
+            ConsoleLog("Sending file.");
+            try
+            {
+                TcpModuleInstance?.SendFile(
+                    "C:\\Users\\Admin\\Desktop\\scheduler_system\\SchedulerClientApp\\Data\\input.txt");
+            }
+            catch (Exception ex)
+            {
+                ConsoleLog(string.Format("Exception: {0} {1}",
+                    ex.Message, ex.GetType().ToString()));
+            }
+            ConsoleLog("File sent.");
+        });
     }
 
     private async Task ReconnectButtonFunction()

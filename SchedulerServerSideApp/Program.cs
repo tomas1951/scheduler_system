@@ -4,6 +4,7 @@ using System.Text;
 using System.Net.Http;
 using System.Reflection.PortableExecutable;
 using System.Reflection;
+using System.Collections;
 
 namespace SchedulerServerSideApp
 {
@@ -32,12 +33,12 @@ namespace SchedulerServerSideApp
                 //---get the incoming data through a network stream---
                 NetworkStream nwStream = client.GetStream();
                 //byte[] buffer = new byte[8192];
-                int fileCounter = 0;
+                //int fileCounter = 0;
 
                 while (true)
                 {
-                    fileCounter += 1;    
-                    string outputFilePath = @"C:\Users\Admin\Desktop\scheduler_system\SchedulerServerSideApp\Data\" + "file" + fileCounter.ToString() + ".txt";
+                    //fileCounter += 1;    
+                    //string outputFilePath = @"C:\Users\Admin\Desktop\scheduler_system\SchedulerServerSideApp\Data\" + "file" + fileCounter.ToString() + ".txt";
 
                     try
                     {
@@ -46,12 +47,16 @@ namespace SchedulerServerSideApp
 
                         string? fileSize = reader.ReadLine();
                         int length = Convert.ToInt32(fileSize);
-                        Console.WriteLine("Received data: {0}", fileSize);
-                        writer.Write("OK");
+                        Console.WriteLine("Received file size: {0}", fileSize);
+                        writer.WriteLine("OK");
+                        writer.Flush();
+                        Console.WriteLine("Sending confirmation");
 
                         string? cmdFileName = reader.ReadLine();
-                        Console.WriteLine("Received data: {0}", cmdFileName);
-                        writer.Write("OK");
+                        Console.WriteLine("Received file name: {0}", cmdFileName);
+                        writer.WriteLine("OK");
+                        writer.Flush();
+                        Console.WriteLine("Sending confirmation");
 
                         byte[] buffer = new byte[length];
                         int received = 0;
@@ -71,7 +76,9 @@ namespace SchedulerServerSideApp
                             received += read;
                         }
 
-                        using (FileStream fStream = new FileStream(Path.GetFileName(cmdFileName), FileMode.Create))
+                        string path = @"C:\Users\Admin\Desktop\scheduler_system\SchedulerServerSideApp\Data\" + cmdFileName;
+
+                        using (FileStream fStream = new FileStream(path, FileMode.Create))
                         {
                             fStream.Write(buffer, 0, buffer.Length);
                             fStream.Flush();
@@ -79,28 +86,10 @@ namespace SchedulerServerSideApp
                             Console.WriteLine("File {0} of size {1} received.", cmdFileName, length);
                         }
 
-                        //int bytesRead;
-                        //FileStream outputFileStream = new FileStream(outputFilePath, FileMode.Create, FileAccess.Write);
-
-                        //while ((bytesRead = nwStream.Read(buffer, 0, buffer.Length)) > 0)
-                        //{
-                        //    Console.WriteLine("Received data: " + bytesRead);
-                        //    outputFileStream.Write(buffer, 0, bytesRead);
-                        //}
-
-                        ////---read incoming stream---
-                        //int bytesRead = nwStream.Read(buffer, 0, client.ReceiveBufferSize);
-
-                        //if (bytesRead > 0)
-                        //{
-                        //    //---convert the data received into a string---
-                        //    string dataReceived = Encoding.ASCII.GetString(buffer, 0, bytesRead);
-                        //    Console.WriteLine("Received : " + dataReceived);
-
-                        //    //---write back the text to the client---
-                        //    Console.WriteLine("Sending back : " + dataReceived + "\n");
-                        //    nwStream.Write(buffer, 0, bytesRead);
-                        //}
+                        Console.WriteLine("Received file: {0}", Encoding.UTF8.GetString(buffer));
+                        writer.WriteLine("OK");
+                        writer.Flush();
+                        Console.WriteLine("Sending confirmation");
                     }
                     catch (IOException ex)
                     {
