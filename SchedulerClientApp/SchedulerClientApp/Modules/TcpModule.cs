@@ -55,6 +55,10 @@ namespace SchedulerClientApp.Modules
         {
             Console.WriteLine("TESTING CONSOLE");
 
+
+
+
+
             if (!File.Exists(path))
             {
                 throw new FileNotFoundException();

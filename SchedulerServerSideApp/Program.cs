@@ -22,6 +22,7 @@ namespace SchedulerServerSideApp
             //---listen at the specified IP and port no.---
             IPAddress localAdd = IPAddress.Parse(SERVER_IP);
             TcpListener listener = new TcpListener(localAdd, PORT_NO);
+
             while (true)
             {
                 Console.WriteLine("Listening...");
@@ -29,17 +30,11 @@ namespace SchedulerServerSideApp
                 //---incoming client connected---
                 TcpClient client = listener.AcceptTcpClient();
                 Console.WriteLine("Client connected: {0}", client.Client.RemoteEndPoint?.ToString());
-
                 //---get the incoming data through a network stream---
                 NetworkStream nwStream = client.GetStream();
-                //byte[] buffer = new byte[8192];
-                //int fileCounter = 0;
 
                 while (true)
                 {
-                    //fileCounter += 1;    
-                    //string outputFilePath = @"C:\Users\Admin\Desktop\scheduler_system\SchedulerServerSideApp\Data\" + "file" + fileCounter.ToString() + ".txt";
-
                     try
                     {
                         StreamReader reader = new StreamReader(client.GetStream());
@@ -105,8 +100,6 @@ namespace SchedulerServerSideApp
                 Console.WriteLine("Client {0} left the server", client.Client.RemoteEndPoint?.ToString());
                 client.Close();
             }
-            listener.Stop();
-            Console.ReadLine();
         }
     }
 }
