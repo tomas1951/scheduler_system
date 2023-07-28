@@ -1,6 +1,7 @@
 ﻿    using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using SchedulerClientApp.Services;
 using SchedulerClientApp.ViewModels;
 using SchedulerClientApp.Views;
 
@@ -17,18 +18,24 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            var mainViewModel = new MainViewModel();
+
             desktop.MainWindow = new MainWindow
             {
-                DataContext = new MainViewModel()
+                DataContext = mainViewModel
             };
+
+            var logService = new LogService(mainViewModel);
+
         }
-        else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
-        {
-            singleViewPlatform.MainView = new MainView
-            {
-                DataContext = new MainViewModel()
-            };
-        }
+ 
+        //else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
+        //{
+        //    singleViewPlatform.MainView = new MainView
+        //    {
+        //        DataContext = new MainViewModel()
+        //    };
+        //}
 
         base.OnFrameworkInitializationCompleted();
     }

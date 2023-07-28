@@ -12,16 +12,17 @@ public partial class MainView : UserControl
         InitializeComponent();
 
         var textBlock = this.FindControl<TextBlock>("logTextBlock");
-        textBlock.PropertyChanged += ScrollToEnd;
+        if (textBlock is not null)
+            textBlock.PropertyChanged += ScrollToEnd;
     }
 
+    // Scroll to end function
     private void ScrollToEnd(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
         if (e.Property == TextBlock.TextProperty)
         {
-            // Scroll to end
             var scrollViewer = this.FindControl<ScrollViewer>("scrollViewer1");
-            scrollViewer.ScrollToEnd();
+            scrollViewer?.ScrollToEnd();
         }
     }
 }

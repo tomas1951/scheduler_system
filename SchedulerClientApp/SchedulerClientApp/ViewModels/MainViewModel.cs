@@ -1,237 +1,179 @@
-﻿using Avalonia.Controls;
-using Avalonia.Threading;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using ReactiveUI;
-using SchedulerClientApp.Views;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Timers;
 using System.Windows.Input;
+using SchedulerClientApp.Modules;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+using System.Text;
 
 namespace SchedulerClientApp.ViewModels;
 
-public class MainViewModel : ViewModelBase, INotifyPropertyChanged
+public partial class MainViewModel : ObservableObject
 {
-    private string _serverConnection = "offline";
-    private string _clientStatus = "Idle";
-    private bool _taskAssigned = false;
-    private string _taskStatus = "no assigned task";
-    private string _operatingSystem = "not recognised";
-    private string _cluster = "not recognised";
-    private string _clientName = "not recognised";
-    private string _clientIP = "not recognised";
-    private Avalonia.Vector _scrollOffset = new Avalonia.Vector();
-
-    public string ServerConnection
-    {
-        get => _serverConnection;
-        set
-        {
-            if (_serverConnection == value)
-                return;
-
-            _serverConnection = value;
-            OnPropertyChanged(nameof(ServerConnection));
-        }
-    }
-
-    public string ClientStatus
-    {
-        get => _clientStatus;
-        set
-        {
-            if (_clientStatus == value)
-                return;
-
-            _clientStatus = value;
-            OnPropertyChanged(nameof(ClientStatus));
-        }
-    }
-    
-    public bool TaskAssigned
-    {
-        get => _taskAssigned;
-        set
-        {
-            if (_taskAssigned == value)
-                return;
-
-            _taskAssigned = value;
-            OnPropertyChanged(nameof(TaskAssigned));
-        }
-    }
-    
-    public string TaskStatus
-    {
-        get => _taskStatus;
-        set
-        {
-            if (_taskStatus == value)
-                return;
-
-            _taskStatus = value;
-            OnPropertyChanged(nameof(TaskStatus));
-        }
-    }
-    
-    public string OperatingSystem
-    {
-        get => _operatingSystem;
-        set
-        {
-            if (_operatingSystem == value)
-                return;
-
-            _operatingSystem = value;
-            OnPropertyChanged(nameof(OperatingSystem));
-        }
-    }
-    
-    public string Cluster
-    {
-        get => _cluster;
-        set
-        {
-            if (_cluster == value)
-                return;
-
-            _cluster = value;
-            OnPropertyChanged(nameof(Cluster));
-        }
-    }
-    
-    public string ClientName
-    {
-        get => _clientName;
-        set
-        {
-            if (_clientName == value)
-                return;
-
-            _clientName = value;
-            OnPropertyChanged(nameof(ClientName));
-        }
-    }
-    
-    public string ClientIP
-    {
-        get => _clientIP;
-        set
-        {
-            if (_clientIP == value)
-                return;
-
-            _clientIP = value;
-            OnPropertyChanged(nameof(ClientIP));
-        }
-    }
-
-    public Avalonia.Vector scrollOffset
-    {
-        get => _scrollOffset;
-        set
-        {
-            if (_scrollOffset == value)
-                return;
-
-            _scrollOffset = value;
-            OnPropertyChanged(nameof(scrollOffset));
-        }
-    }
-
-    public event PropertyChangedEventHandler ? PropertyChanged;
-
-    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
-
-    // Button command handler
-    public ICommand ? ButtonTestFunctionCommand { get; }
-
-    private void ButtonTestFunction()
-    {
-        // Test changing a variable
-        ClientStatus = "connecting";
-
-        // Testing full text box
-        ReceivedMessages += "New message \n";
-
-        //// Testing chatgpt scrolling
-        //AddMessage("New message \n");
-
-        scrollOffset = new Avalonia.Vector(-1000, -1000);
-    }
-
-    // Testing full text variable
+    // These properties are bound to the labels in User Interface
+    // Note: 
+    // Capital letters properties are auto-generated and using 
+    // non-capital variables in code will lead to errors
+    [ObservableProperty]
+    private string serverConnection = "offline";
+    [ObservableProperty]
+    private string clientStatus = "idle...";
+    [ObservableProperty]
+    private bool taskAssigned = false;
+    [ObservableProperty]
+    private string taskStatus = "no assigned task";
+    [ObservableProperty]
+    private string operatingSystem = "not recognised";
+    [ObservableProperty]
+    private string cluster = "not recognised";
+    [ObservableProperty]
+    private string clientName = "not recognised";
+    [ObservableProperty]
+    private string clientIP = "not recognised";
+    [ObservableProperty]
     private string _ReceivedMessages = string.Empty;
-
-    public string ReceivedMessages
-    {
-        get => _ReceivedMessages;
-        set
-        {
-            if (_ReceivedMessages == value)
-                return;
-            _ReceivedMessages = value;
-            OnPropertyChanged(nameof(ReceivedMessages));
-        }
-    }
-
-
-
-
-
-    //public event EventHandler? MessageAdded;
-
-    //public void AddMessage(string message)
-    //{
-    //    Messages.Add(message);
-    //}
-
-    //private void Messages_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-    //{
-    //    MessageAdded?.Invoke(this, EventArgs.Empty);
-    //}
-
-    ///// <summary>
-    /////  ChatGPS solution for autoscrolling
-    ///// </summary>
-    //private ObservableCollection<string> _messages = new ObservableCollection<string>();
-    //public ObservableCollection<string> Messages
-    //{
-    //    get => _messages;
-    //    set
-    //    {
-    //        if (_messages != value)
-    //        {
-    //            _messages = value;
-    //            OnPropertyChanged();
-    //        }
-    //    }
-    //}
+    // Button handlers
+    public ICommand? MoreDetailsButtonCommand { get; set; }
+    public ICommand? ReconnectButtonCommand { get; set; }
+    // Tcp connection
+    private TcpModule? TcpModuleInstance;
+    private Timer? ReconnectingTimer;
+    private Timer? StatusTimer;
 
     public MainViewModel()
     {
-        //// chatgpt
-        //Messages = new ObservableCollection<string>();
-        //Messages.CollectionChanged += Messages_CollectionChanged;
+        ConsoleLog("Scheduler client app started.");
+        InitHandlers();
+        SetReconnectingTimer();
+        SetStatusTimer();
+        CreateTcpConnection();
 
-        // Button Handler to activate function
-        ButtonTestFunctionCommand = ReactiveCommand.Create(ButtonTestFunction);
+        //TcpModuleInstance?.SendFile("C:\\Users\\Admin\\Desktop\\scheduler_system\\SchedulerClientApp\\Data\\input.txt");
+    }
 
-        // Testing code to change variable
-        Task.Run(async () =>
+    public void InitHandlers()
+    {
+        // More Detains Button Handler
+        MoreDetailsButtonCommand = ReactiveCommand.Create(MoreDetailsButtonFunction);
+        // Reconnect Button Handler
+        ReconnectButtonCommand = ReactiveCommand.Create(ReconnectButtonFunction);
+    }
+
+    private void CreateTcpConnection()
+    {
+        ConsoleLog("Connecting to a server...");
+        try
         {
-            await Task.Delay(5000);
-            ServerConnection = "online";
-        });
+            TcpModuleInstance = new TcpModule("127.0.0.1", 1234);
+        }
+        catch (SocketException)
+        {
+            ConsoleLog("Server is offline.");
+        }
+        catch (Exception ex)
+        {
+            ConsoleLog(string.Format("Exception: {0} - {1}", ex.GetType().Name, ex.Message));
+        }
 
-        // Testing full text box
-        ReceivedMessages += "New message \n";
+        if (TcpModuleInstance is not null && TcpModuleInstance.IsConnected())
+        {
+            ConsoleLog("Connection successful");
+            ServerConnection = "online";
+        }
+        else
+        {
+            ConsoleLog("Connection failed.\n");
+            ServerConnection = "failed";
+        }
+    }
+
+    private void SetStatusTimer()
+    {
+        StatusTimer = new Timer(20000);
+        StatusTimer.Elapsed += new ElapsedEventHandler(OnStatusTimer);
+        StatusTimer.AutoReset = true;
+        StatusTimer.Enabled = true;
+    }
+
+    private void OnStatusTimer(object? source, ElapsedEventArgs e)
+    {
+        if (ServerConnection != "online")
+        {
+            return;
+        }
+        //string textToSend = DateTime.Now.ToString();
+        //byte[] bytesToSend = Encoding.ASCII.GetBytes(textToSend);
+        //ConsoleLog("Sending : " + textToSend);
+        //if (TcpModuleInstance?.SendMessage(bytesToSend) == false)
+        //{
+        //    ConsoleLog("Server is offline.");
+        //    ServerConnection = "offline";
+        //}
+
+
+    }
+
+    private void SetReconnectingTimer()
+    {
+        ReconnectingTimer = new Timer(15000);
+        ReconnectingTimer.Elapsed += new ElapsedEventHandler(OnReconnectingTimer);
+        ReconnectingTimer.AutoReset = true;
+        ReconnectingTimer.Enabled = true;
+    }
+
+    private void OnReconnectingTimer(object? source, ElapsedEventArgs e)
+    {
+        if (ServerConnection == "offline" || ServerConnection == "failed")
+        {
+            ServerConnection = "reconnecting...";
+            ConsoleLog("Auto-reconnecting: ");
+            CreateTcpConnection();
+        }
+    }
+
+    private async Task MoreDetailsButtonFunction()
+    {
+        await Task.Run(() =>
+        {
+            ConsoleLog("Sending file.");
+            try
+            {
+                TcpModuleInstance?.SendFile(
+                    "C:\\Users\\Admin\\Desktop\\scheduler_system\\SchedulerClientApp\\Data\\input.txt");
+            }
+            catch (Exception ex)
+            {
+                ConsoleLog(string.Format("Exception: {0} {1}",
+                    ex.Message, ex.GetType().ToString()));
+            }
+            ConsoleLog("File sent.");
+        });
+    }
+
+    private async Task ReconnectButtonFunction()
+    {
+        await Task.Run(() =>
+        {
+            TcpModuleInstance?.Disconnect();
+        });
+        ConsoleLog("Disconnected.");
+        CreateTcpConnection();
+    }
+
+    private void ConsoleLog(string message, bool endl = true, bool date = true)
+    {
+        if (endl)
+        {
+            message += "\n";
+        }
+        if (date)
+        {
+            DateTime currentDateTime = DateTime.Now;
+            string formattedDate = currentDateTime.ToString("MM/dd/yyyy HH:mm:ss");
+            message = (formattedDate + "> " + message);
+        }
+        ReceivedMessages += message;
     }
 }
