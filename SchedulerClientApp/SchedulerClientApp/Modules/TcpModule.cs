@@ -1,11 +1,6 @@
-﻿using Svg;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Linq;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SchedulerClientApp.Modules
 {
@@ -54,10 +49,6 @@ namespace SchedulerClientApp.Modules
         public void SendFile(string path)
         {
             Console.WriteLine("TESTING CONSOLE");
-
-
-
-
 
             if (!File.Exists(path))
             {

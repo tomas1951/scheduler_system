@@ -37,7 +37,7 @@ public partial class MainViewModel : ObservableObject
     // Button handlers
     public ICommand? MoreDetailsButtonCommand { get; set; }
     public ICommand? ReconnectButtonCommand { get; set; }
-    // Tcp connection
+    // Tcp connection properties
     private TcpModule? TcpModuleInstance;
     private Timer? ReconnectingTimer;
     private Timer? StatusTimer;
@@ -111,8 +111,6 @@ public partial class MainViewModel : ObservableObject
         //    ConsoleLog("Server is offline.");
         //    ServerConnection = "offline";
         //}
-
-
     }
 
     private void SetReconnectingTimer()
