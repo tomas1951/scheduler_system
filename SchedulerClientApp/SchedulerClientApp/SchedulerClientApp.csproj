@@ -24,6 +24,5 @@
 
   <ItemGroup>
     <Folder Include="Behaviour\" />
-    <Folder Include="Resources\" />
   </ItemGroup>
 </Project>

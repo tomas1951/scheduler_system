@@ -6,7 +6,8 @@ using System.Windows.Input;
 using SchedulerClientApp.Modules;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using System.Text;
+using SchedulerClientApp.Resources;
+using System.Text.Json;
 
 namespace SchedulerClientApp.ViewModels;
 
@@ -38,7 +39,7 @@ public partial class MainViewModel : ObservableObject
     public ICommand? MoreDetailsButtonCommand { get; set; }
     public ICommand? ReconnectButtonCommand { get; set; }
     // Tcp connection properties
-    private TcpModule? TcpModuleInstance;
+    private Client? Client;
     private Timer? ReconnectingTimer;
     private Timer? StatusTimer;
 
@@ -66,7 +67,9 @@ public partial class MainViewModel : ObservableObject
         ConsoleLog("Connecting to a server...");
         try
         {
-            TcpModuleInstance = new TcpModule("127.0.0.1", 1234);
+            //TcpModuleInstance = new Client("127.0.0.1", 1234);
+            Client = new Client();
+            Client.Connect("127.0.0.1", 1234);
         }
         catch (SocketException)
         {
@@ -77,7 +80,7 @@ public partial class MainViewModel : ObservableObject
             ConsoleLog(string.Format("Exception: {0} - {1}", ex.GetType().Name, ex.Message));
         }
 
-        if (TcpModuleInstance is not null && TcpModuleInstance.IsConnected())
+        if (Client is not null && Client.IsConnected())
         {
             ConsoleLog("Connection successful");
             ServerConnection = "online";
@@ -135,26 +138,39 @@ public partial class MainViewModel : ObservableObject
     {
         await Task.Run(() =>
         {
-            ConsoleLog("Sending file.");
+            ConsoleLog("Sending a message on other thread...");
             try
             {
-                TcpModuleInstance?.SendFile(
-                    "C:\\Users\\Admin\\Desktop\\scheduler_system\\SchedulerClientApp\\Data\\input.txt");
+                StatusMessage message = new StatusMessage("sending current status");
+                ConsoleLog(string.Format("Sending: {0}", JsonSerializer.Serialize(message)));
+                Client?.SendMessage(message);
+
+                //TcpModuleInstance?.SendFile(
+                    //"C:\\Users\\Admin\\Desktop\\scheduler_system\\SchedulerClientApp\\Data\\input.txt");
             }
             catch (Exception ex)
             {
                 ConsoleLog(string.Format("Exception: {0} {1}",
                     ex.Message, ex.GetType().ToString()));
             }
-            ConsoleLog("File sent.");
+            ConsoleLog("Message sent.");
         });
+
+        //await Task.Run(() =>
+        //{
+        //    ConsoleLog("Creating Base Message.");
+        //    StatusMessage message = new StatusMessage("status", "idle");
+        //    ConsoleLog("Json message:");
+        //    ConsoleLog(message.GetJsonString());
+        //    ConsoleLog("");
+        //});
     }
 
     private async Task ReconnectButtonFunction()
     {
         await Task.Run(() =>
         {
-            TcpModuleInstance?.Disconnect();
+            Client?.Disconnect();
         });
         ConsoleLog("Disconnected.");
         CreateTcpConnection();
