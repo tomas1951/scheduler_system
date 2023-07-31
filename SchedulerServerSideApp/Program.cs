@@ -1,17 +1,14 @@
 ﻿using System.Net.Sockets;
 using System.Net;
 using System.Text;
-using System.Net.Http;
-using System.Reflection.PortableExecutable;
-using System.Reflection;
-using System.Collections;
 
 namespace SchedulerServerSideApp
 {
     internal class Program
     {
         const int PORT_NO = 1234;
-        const string SERVER_IP = "127.0.0.1";
+        //const string SERVER_IP = "127.0.0.1";
+        //IPAddress localAdd = IPAddress.Parse(SERVER_IP);
 
         static void Main(string[] args)
         {
@@ -20,8 +17,8 @@ namespace SchedulerServerSideApp
 #endif
             Console.WriteLine("Server started.");
             //---listen at the specified IP and port no.---
-            IPAddress localAdd = IPAddress.Parse(SERVER_IP);
-            TcpListener listener = new TcpListener(localAdd, PORT_NO);
+
+            TcpListener listener = new TcpListener(IPAddress.Any, PORT_NO);
 
             while (true)
             {
