@@ -1,2 +1,2 @@
 # scheduler_system
-Bachelor's thesis
+Czechglobe Scheduler System

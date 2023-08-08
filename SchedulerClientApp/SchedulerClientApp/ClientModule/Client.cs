@@ -1,44 +1,24 @@
-﻿using SchedulerClientApp.ClientModule;
-using SchedulerClientApp.Resources;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
-using System.Text.Json;
 using System.Threading;
+using Messages;
+using Enums;
 
-namespace SchedulerClientApp.Modules
+namespace SchedulerClientApp.ClientModule
 {
     public class Client
     {
-        //public string? Address;
-        //public int? Port;
-        public TcpClient? TcpClient;
-        //public NetworkStream? ClientSockStream;
-        //public StreamReader? ClientStreamReader;
-        //public StreamWriter? ClientStreamWriter;
+        public TcpClient TcpClient = new TcpClient();
         public List<BaseMessage> MessageQueue = new List<BaseMessage>();
-        public ClientStatus Status = ClientStatus.Disconnected;
-
-        public Client()
-        {
-            //Address = address;
-            //Port = port;
-
-            //TcpConnection = new TcpClient(Address, Port);
-            //ClientSockStream = TcpConnection.GetStream();
-            //ClientStreamReader = new StreamReader(ClientSockStream);
-            //ClientStreamWriter = new StreamWriter(ClientSockStream);
-        }
+        public ClientStatusEnum Status = ClientStatusEnum.Disconnected;
 
         public void Connect(string address, int port)
         {
-            //Address = address;
-            //Port = port;
-
             TcpClient = new TcpClient();
             TcpClient.Connect(address, port);
-            Status = ClientStatus.Connected;
+            Status = ClientStatusEnum.Connected;
             TcpClient.ReceiveBufferSize = 1024;
             TcpClient.SendBufferSize = 1024;
 
@@ -58,6 +38,7 @@ namespace SchedulerClientApp.Modules
 
         public void Disconnect()
         {
+            Status = ClientStatusEnum.Disconnected;
             TcpClient.GetStream().Close();
             TcpClient.Close();
         }
@@ -70,38 +51,26 @@ namespace SchedulerClientApp.Modules
 
         public void SendingMethod()
         {
-            while (Status != ClientStatus.Disconnected)
+            while (Status != ClientStatusEnum.Disconnected)
             {
                 if (MessageQueue.Count > 0 && TcpClient is not null)
                 {
-                    var m = MessageQueue[0];
-                    Type type = m.GetType();
-                    string s;
-
-                    if (type == typeof(StatusMessage))
-                    {
-                        StatusMessage message = (StatusMessage)m;
-                        s = JsonSerializer.Serialize(message);
-                    }
-                    else
-                    {
-                        BaseMessage message = (BaseMessage)m;
-                        s = JsonSerializer.Serialize(message);
-                    }
-
                     NetworkStream stream = TcpClient.GetStream();
                     StreamWriter writer = new StreamWriter(stream);
+
+                    BaseMessage message = MessageQueue[0];
+                    string str = message.GetSerializedString();
+
                     try
                     {
-                        //f.Serialize(TcpClient.GetStream(), m);
-                        writer.WriteLine(s);
+                        writer.WriteLine(str);
                         writer.Flush();
                     }
                     catch
                     {
                         Disconnect();
                     }
-                    MessageQueue.Remove(m);
+                    MessageQueue.Remove(message);
                 }
                 Thread.Sleep(30);
             }
@@ -111,58 +80,5 @@ namespace SchedulerClientApp.Modules
         {
 
         }
-
-
-        // old
-        //public bool SendMessage(byte[] message)
-        //{
-        //    if (IsConnected())
-        //    {
-        //        //ClientStreamWriter.WriteLine(message);
-        //        //ClientSockStream.Write(message, 0, message.Length);
-        //        return true;
-        //    }
-        //    return false;
-        //}
-
-
-        // old
-        //public void SendFile(string path)
-        //{
-        //    Console.WriteLine("TESTING CONSOLE");
-
-        //    if (!File.Exists(path))
-        //    {
-        //        throw new FileNotFoundException();
-        //    }
-        //    if (!IsConnected())
-        //    {
-        //        throw new Exception("Not connected");
-        //    }
-        //    byte[] bytes = File.ReadAllBytes(path);
-        //    ClientStreamWriter.WriteLine(bytes.Length.ToString());
-
-        //    ClientStreamWriter.Flush();
-
-        //    string? response = ClientStreamReader.ReadLine();
-        //    if (response != "OK")
-        //    {
-        //        throw new Exception("Connection lost during communication.");
-        //    }
-        //    ClientStreamWriter.WriteLine(Path.GetFileName(path));
-        //    ClientStreamWriter.Flush();
-        //    response = ClientStreamReader.ReadLine();
-        //    if (response != "OK")
-        //    {
-        //        throw new Exception("Connection lost during communication.");
-        //    }
-        //    TcpClient.Client.SendFile(path);
-        //    response = ClientStreamReader.ReadLine();
-        //    if (response != "OK")
-        //    {
-        //        throw new Exception("Connection lost during communication.");
-        //    }
-        //    //ClientSockStream.Write(bytes, 0, bytes.Length);
-        //}
     }
 }
