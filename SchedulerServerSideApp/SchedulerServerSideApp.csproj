@@ -8,12 +8,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\SharedResources\Enums\ClientStatusEnum.cs" Link="SharedLibEnums\ClientStatusEnum.cs" />
+    <Compile Include="..\SharedResources\Enums\TaskStatusEnum.cs" Link="SharedLibEnums\TaskStatusEnum.cs" />
+    <Compile Include="..\SharedResources\Messages\BaseMessage.cs" Link="SharedLibMessages\BaseMessage.cs" />
+    <Compile Include="..\SharedResources\Messages\StatusMessage.cs" Link="SharedLibMessages\StatusMessage.cs" />
+    <Compile Include="..\SharedResources\Messages\TaskMessage.cs" Link="SharedLibMessages\TaskMessage.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SharedResources\Enums\Enums.csproj" />
-    <ProjectReference Include="..\SharedResources\Messages\Messages.csproj" />
+    <Folder Include="SharedLibEnums\" />
+    <Folder Include="SharedLibMessages\" />
   </ItemGroup>
 
 </Project>

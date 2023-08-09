@@ -1,9 +1,8 @@
-﻿namespace Enums
+﻿namespace SharedLibEnums;
+
+public enum ClientStatusEnum
 {
-    public enum ClientStatusEnum
-    {
-        Connected,
-        Disconnected,
-        Reconnecting
-    }
+    Connected,
+    Disconnected,
+    Reconnecting
 }

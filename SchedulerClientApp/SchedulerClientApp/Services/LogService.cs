@@ -1,19 +1,30 @@
 ﻿using SchedulerClientApp.ViewModels;
 
-namespace SchedulerClientApp.Services
+namespace SchedulerClientApp.Services;
+
+public class LogService
 {
-    public class LogService
+    MainViewModel mainViewModel;
+
+    public LogService(MainViewModel mainViewModel)
     {
-        MainViewModel mainViewModel;
+        this.mainViewModel = mainViewModel;
+    }
 
-        public LogService(MainViewModel mainViewModel)
+    public void Log(string message, bool endl = true, bool date = true)
+    {
+        if (endl)
         {
-            this.mainViewModel = mainViewModel;
+            message += "\n";
         }
+        if (date)
+        {
+            System.DateTime currentDateTime = System.DateTime.Now;
+            string formattedDate = currentDateTime.ToString("MM/dd/yyyy HH:mm:ss");
+            message = (formattedDate + "> " + message);
+        }
+        mainViewModel.ReceivedMessages += message;
 
-        public void Log(string message)
-        {
-            mainViewModel.ReceivedMessages += (message + "\n");
-        }
+
     }
 }

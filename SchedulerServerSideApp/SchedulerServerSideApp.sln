@@ -5,10 +5,6 @@ VisualStudioVersion = 17.6.33829.357
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchedulerServerSideApp", "SchedulerServerSideApp.csproj", "{30F3C397-3FC2-4027-A3BC-54248C098432}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Messages", "..\SharedResources\Messages\Messages.csproj", "{4C5F41CF-DE26-4B09-AC2E-409EAE08CB7F}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Enums", "..\SharedResources\Enums\Enums.csproj", "{0950B01D-752D-412C-B603-37C09BE8462D}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,14 +15,6 @@ Global
 		{30F3C397-3FC2-4027-A3BC-54248C098432}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{30F3C397-3FC2-4027-A3BC-54248C098432}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{30F3C397-3FC2-4027-A3BC-54248C098432}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4C5F41CF-DE26-4B09-AC2E-409EAE08CB7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4C5F41CF-DE26-4B09-AC2E-409EAE08CB7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4C5F41CF-DE26-4B09-AC2E-409EAE08CB7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4C5F41CF-DE26-4B09-AC2E-409EAE08CB7F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0950B01D-752D-412C-B603-37C09BE8462D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0950B01D-752D-412C-B603-37C09BE8462D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0950B01D-752D-412C-B603-37C09BE8462D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0950B01D-752D-412C-B603-37C09BE8462D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

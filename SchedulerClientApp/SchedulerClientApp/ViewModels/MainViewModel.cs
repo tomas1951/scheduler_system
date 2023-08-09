@@ -1,13 +1,15 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using ReactiveUI;
+using SchedulerClientApp.ClientModule;
+using SchedulerClientApp.Services;
 using System;
-using System.Timers;
-using System.Windows.Input;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using Messages;
-using SchedulerClientApp.ClientModule;
-using Enums;
+using System.Timers;
+using System.Windows.Input;
+using SharedLibEnums;
+using SharedLibMessages;
+using SchedulerClientApp.TaskManager;
 
 namespace SchedulerClientApp.ViewModels;
 
@@ -35,22 +37,34 @@ public partial class MainViewModel : ObservableObject
     private string clientIP = "not recognised";
     [ObservableProperty]
     private string _ReceivedMessages = string.Empty;
+    
     // Button handlers
     public ICommand? MoreDetailsButtonCommand { get; set; }
     public ICommand? ReconnectButtonCommand { get; set; }
+    
+    // Macros
+    public delegate void MacroDelegate(string message, bool endl = true, 
+        bool date = true);
+
     // Tcp connection properties
-    private Client? Client;
+    private Client Client { get; set; }
+    private ComputationalTask? CurrentTask;
+    private LogService LogService;
     private Timer? ReconnectingTimer;
     private Timer? StatusTimer;
+    private MacroDelegate Log;
 
     public MainViewModel()
     {
-        ConsoleLog("Scheduler client app started.");
+        LogService = new LogService(this);
+        Log = LogService.Log;
+        Log("Scheduler client app started.");
+        Client = new Client(LogService);
         InitHandlers();
         SetReconnectingTimer();
         SetStatusTimer();
         CreateTcpConnection();
-        SendStatusMessage();
+        OnStatusTimer(null);
     }
 
     public void InitHandlers()
@@ -63,65 +77,68 @@ public partial class MainViewModel : ObservableObject
 
     private void CreateTcpConnection()
     {
-        ConsoleLog("Connecting to a server...");
+        Log("Connecting to a server...");
         try
         {
-            Client = new Client();
             Client.Connect("127.0.0.1", 1234);
         }
         catch (SocketException)
         {
-            ConsoleLog("Server is offline.");
+            Log("Server is offline");
         }
         catch (Exception ex)
         {
-            ConsoleLog(string.Format("Exception: {0} - {1}", ex.GetType().Name, ex.Message));
+            Log($"Exception: {ex.GetType().Name} - {ex.Message}");
         }
 
         if (Client is not null && Client.IsConnected())
         {
-            ConsoleLog("Connection successful");
+            Log("Connection successful");
             ClientStatus = ClientStatusEnum.Connected;
         }
         else
         {
-            ConsoleLog("Connection failed.\n");
+            Log("Connection failed");
             ClientStatus = ClientStatusEnum.Disconnected;
         }
     }
 
     private void SetStatusTimer()
     {
-        StatusTimer = new Timer(20000);
+        StatusTimer = new Timer(15000);
         StatusTimer.Elapsed += new ElapsedEventHandler(OnStatusTimer);
         StatusTimer.AutoReset = true;
         StatusTimer.Enabled = true;
     }
 
-    private void OnStatusTimer(object? source, ElapsedEventArgs e)
+    private void OnStatusTimer(object? source, ElapsedEventArgs? e = null)
     {
+        if (!Client.IsConnected())
+        {
+            Log("Server is offline.");
+            ClientStatus = ClientStatusEnum.Disconnected;
+            return;
+        }
+        else
+        {
+            //Log("Server is online -> sending...");
+        }
         SendStatusMessage();
     }
 
     private async void SendStatusMessage()
     {
-        if (ClientStatus != ClientStatusEnum.Connected)
-        {
-            return;
-        }
-
         await Task.Run(() =>
         {
             try
             {
                 StatusMessage message = new StatusMessage(ClientStatus.ToString());
-                ConsoleLog(string.Format("Sending status message. Status: {0}", ClientStatus.ToString()));
+                Log($"Sending status message. Status: {ClientStatus}");
                 Client?.SendMessage(message);
             }
             catch (Exception ex)
             {
-                ConsoleLog(string.Format("Exception: {0} {1}",
-                    ex.Message, ex.GetType().ToString()));
+                Log($"Exception: {ex.Message} {ex.GetType()}");
             }
         });
     }
@@ -139,39 +156,46 @@ public partial class MainViewModel : ObservableObject
         if (ClientStatus == ClientStatusEnum.Disconnected)
         {
             ClientStatus = ClientStatusEnum.Reconnecting;
-            ConsoleLog("Auto-reconnecting: ");
+            Log("Auto-reconnecting: ");
             CreateTcpConnection();
         }
     }
 
     private async Task MoreDetailsButtonFunction()
     {
+        if (!Client.IsConnected())
+        {
+            Log("Server is offline");
+            ClientStatus = ClientStatusEnum.Disconnected;
+            return;
+        }
 
+        await Task.Run(() =>
+        {
+            try
+            {
+                BaseMessage message = new BaseMessage();
+                Log("Sending base message");
+                Client?.SendMessage(message);
+            }
+            catch (Exception ex)
+            {
+                Log($"Exception: {ex.Message} {ex.GetType()}");
+            }
+        });
     }
 
     private async Task ReconnectButtonFunction()
     {
-        await Task.Run(() =>
+        if (ClientStatus != ClientStatusEnum.Disconnected)
         {
-            Client?.Disconnect();
-        });
-        ConsoleLog("Disconnected.");
+            await Task.Run(() =>
+            {
+                Client?.Disconnect();
+            });
+        }
+        Log("Disconnected");
         ClientStatus = ClientStatusEnum.Disconnected;
         CreateTcpConnection();
-    }
-
-    private void ConsoleLog(string message, bool endl = true, bool date = true)
-    {
-        if (endl)
-        {
-            message += "\n";
-        }
-        if (date)
-        {
-            DateTime currentDateTime = DateTime.Now;
-            string formattedDate = currentDateTime.ToString("MM/dd/yyyy HH:mm:ss");
-            message = (formattedDate + "> " + message);
-        }
-        ReceivedMessages += message;
     }
 }

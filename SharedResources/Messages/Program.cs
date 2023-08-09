@@ -1,10 +1,9 @@
-﻿namespace Messages
+﻿namespace Messages;
+
+internal class Program
 {
-    internal class Program
+    public static void Main(string[] args)
     {
-        public static void Main(string[] args)
-        {
-               
-        }
+
     }
 }

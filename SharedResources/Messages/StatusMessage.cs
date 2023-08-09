@@ -1,24 +1,23 @@
 ﻿using Newtonsoft.Json;
 
-namespace Messages
+namespace SharedLibMessages;
+
+[JsonObject(ItemTypeNameHandling = TypeNameHandling.Auto)]
+public class StatusMessage : BaseMessage
 {
-    [JsonObject(ItemTypeNameHandling = TypeNameHandling.Auto)]
-    public class StatusMessage : BaseMessage
+    public string CurrentStatus { get; set; }
+    private JsonSerializerSettings JsonSettings = new JsonSerializerSettings
     {
-        public string CurrentStatus { get; set; }
-        JsonSerializerSettings JsonSettings = new JsonSerializerSettings
-        {
-            TypeNameHandling = TypeNameHandling.All
-        };
+        TypeNameHandling = TypeNameHandling.All
+    };
 
-        public StatusMessage(string currentStatus) : base("status")
-        {
-            CurrentStatus = currentStatus;
-        }
+    public StatusMessage(string currentStatus) : base()
+    {
+        CurrentStatus = currentStatus;
+    }
 
-        public override string GetSerializedString()
-        {
-            return JsonConvert.SerializeObject(this, JsonSettings);
-        }
+    public override string GetSerializedString()
+    {
+        return JsonConvert.SerializeObject(this, JsonSettings);
     }
 }

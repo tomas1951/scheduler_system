@@ -15,3 +15,8 @@ C:\Users\Admin\Desktop\scheduler_system\SharedResources\Messages\obj\Debug\net7.
 C:\Users\Admin\Desktop\scheduler_system\SharedResources\Messages\obj\Debug\net7.0\Messages.pdb
 C:\Users\Admin\Desktop\scheduler_system\SharedResources\Messages\obj\Debug\net7.0\Messages.genruntimeconfig.cache
 C:\Users\Admin\Desktop\scheduler_system\SharedResources\Messages\obj\Debug\net7.0\ref\Messages.dll
+C:\Users\Admin\Desktop\scheduler_system\SharedResources\Messages\bin\Debug\net7.0\Enums.deps.json
+C:\Users\Admin\Desktop\scheduler_system\SharedResources\Messages\bin\Debug\net7.0\Enums.runtimeconfig.json
+C:\Users\Admin\Desktop\scheduler_system\SharedResources\Messages\bin\Debug\net7.0\Enums.exe
+C:\Users\Admin\Desktop\scheduler_system\SharedResources\Messages\bin\Debug\net7.0\Enums.dll
+C:\Users\Admin\Desktop\scheduler_system\SharedResources\Messages\bin\Debug\net7.0\Enums.pdb

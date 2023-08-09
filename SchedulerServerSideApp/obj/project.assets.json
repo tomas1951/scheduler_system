@@ -14,29 +14,6 @@
             "related": ".xml"
           }
         }
-      },
-      "Enums/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v7.0",
-        "compile": {
-          "bin/placeholder/Enums.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/Enums.dll": {}
-        }
-      },
-      "Messages/1.0.0": {
-        "type": "project",
-        "framework": ".NETCoreApp,Version=v7.0",
-        "dependencies": {
-          "Newtonsoft.Json": "13.0.3"
-        },
-        "compile": {
-          "bin/placeholder/Messages.dll": {}
-        },
-        "runtime": {
-          "bin/placeholder/Messages.dll": {}
-        }
       }
     }
   },
@@ -70,22 +47,10 @@
         "newtonsoft.json.nuspec",
         "packageIcon.png"
       ]
-    },
-    "Enums/1.0.0": {
-      "type": "project",
-      "path": "../SharedResources/Enums/Enums.csproj",
-      "msbuildProject": "../SharedResources/Enums/Enums.csproj"
-    },
-    "Messages/1.0.0": {
-      "type": "project",
-      "path": "../SharedResources/Messages/Messages.csproj",
-      "msbuildProject": "../SharedResources/Messages/Messages.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net7.0": [
-      "Enums >= 1.0.0",
-      "Messages >= 1.0.0",
       "Newtonsoft.Json >= 13.0.3"
     ]
   },
@@ -121,14 +86,7 @@
       "frameworks": {
         "net7.0": {
           "targetAlias": "net7.0",
-          "projectReferences": {
-            "C:\\Users\\Admin\\Desktop\\scheduler_system\\SharedResources\\Enums\\Enums.csproj": {
-              "projectPath": "C:\\Users\\Admin\\Desktop\\scheduler_system\\SharedResources\\Enums\\Enums.csproj"
-            },
-            "C:\\Users\\Admin\\Desktop\\scheduler_system\\SharedResources\\Messages\\Messages.csproj": {
-              "projectPath": "C:\\Users\\Admin\\Desktop\\scheduler_system\\SharedResources\\Messages\\Messages.csproj"
-            }
-          }
+          "projectReferences": {}
         }
       },
       "warningProperties": {
