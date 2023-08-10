@@ -89,7 +89,7 @@ public class Client
             Thread.Sleep(30);
         }
     }
-
+ 
     public void ReceivingMethod()
     {
         while (Status != ClientStatusEnum.Disconnected)
