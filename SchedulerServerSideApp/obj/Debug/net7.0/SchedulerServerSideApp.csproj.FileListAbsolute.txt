@@ -13,3 +13,5 @@ C:\Users\Admin\Desktop\scheduler_system\SchedulerServerSideApp\obj\Debug\net7.0\
 C:\Users\Admin\Desktop\scheduler_system\SchedulerServerSideApp\obj\Debug\net7.0\SchedulerServerSideApp.pdb
 C:\Users\Admin\Desktop\scheduler_system\SchedulerServerSideApp\obj\Debug\net7.0\SchedulerServerSideApp.genruntimeconfig.cache
 C:\Users\Admin\Desktop\scheduler_system\SchedulerServerSideApp\obj\Debug\net7.0\ref\SchedulerServerSideApp.dll
+C:\Users\Admin\Desktop\scheduler_system\SchedulerServerSideApp\bin\Debug\net7.0\Newtonsoft.Json.dll
+C:\Users\Admin\Desktop\scheduler_system\SchedulerServerSideApp\obj\Debug\net7.0\SchedulerServerSideApp.csproj.CopyComplete

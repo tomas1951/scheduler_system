@@ -1,12 +1,15 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using ReactiveUI;
+using SchedulerClientApp.ClientModule;
+using SchedulerClientApp.Services;
 using System;
-using System.Timers;
-using System.Windows.Input;
-using SchedulerClientApp.Modules;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using System.Text;
+using System.Timers;
+using System.Windows.Input;
+using SharedLibEnums;
+using SharedLibMessages;
+using SchedulerClientApp.TaskManager;
 
 namespace SchedulerClientApp.ViewModels;
 
@@ -17,9 +20,9 @@ public partial class MainViewModel : ObservableObject
     // Capital letters properties are auto-generated and using 
     // non-capital variables in code will lead to errors
     [ObservableProperty]
-    private string serverConnection = "offline";
+    private string serverConnection = "deprecated";
     [ObservableProperty]
-    private string clientStatus = "idle...";
+    private ClientStatusEnum clientStatus = ClientStatusEnum.Disconnected;
     [ObservableProperty]
     private bool taskAssigned = false;
     [ObservableProperty]
@@ -34,23 +37,34 @@ public partial class MainViewModel : ObservableObject
     private string clientIP = "not recognised";
     [ObservableProperty]
     private string _ReceivedMessages = string.Empty;
+    
     // Button handlers
     public ICommand? MoreDetailsButtonCommand { get; set; }
     public ICommand? ReconnectButtonCommand { get; set; }
+    
+    // Macros
+    public delegate void MacroDelegate(string message, bool endl = true, 
+        bool date = true);
+
     // Tcp connection properties
-    private TcpModule? TcpModuleInstance;
+    private Client Client { get; set; }
+    private ComputationalTask? CurrentTask;
+    private LogService LogService;
     private Timer? ReconnectingTimer;
     private Timer? StatusTimer;
+    private MacroDelegate Log;
 
     public MainViewModel()
     {
-        ConsoleLog("Scheduler client app started.");
+        LogService = new LogService(this);
+        Log = LogService.Log;
+        Log("Scheduler client app started.");
+        Client = new Client(LogService);
         InitHandlers();
         SetReconnectingTimer();
         SetStatusTimer();
         CreateTcpConnection();
-
-        //TcpModuleInstance?.SendFile("C:\\Users\\Admin\\Desktop\\scheduler_system\\SchedulerClientApp\\Data\\input.txt");
+        OnStatusTimer(null);
     }
 
     public void InitHandlers()
@@ -63,54 +77,70 @@ public partial class MainViewModel : ObservableObject
 
     private void CreateTcpConnection()
     {
-        ConsoleLog("Connecting to a server...");
+        Log("Connecting to a server...");
         try
         {
-            TcpModuleInstance = new TcpModule("127.0.0.1", 1234);
+            Client.Connect("127.0.0.1", 1234);
         }
         catch (SocketException)
         {
-            ConsoleLog("Server is offline.");
+            Log("Server is offline");
         }
         catch (Exception ex)
         {
-            ConsoleLog(string.Format("Exception: {0} - {1}", ex.GetType().Name, ex.Message));
+            Log($"Exception: {ex.GetType().Name} - {ex.Message}");
         }
 
-        if (TcpModuleInstance is not null && TcpModuleInstance.IsConnected())
+        if (Client is not null && Client.IsConnected())
         {
-            ConsoleLog("Connection successful");
-            ServerConnection = "online";
+            Log("Connection successful");
+            ClientStatus = ClientStatusEnum.Connected;
         }
         else
         {
-            ConsoleLog("Connection failed.\n");
-            ServerConnection = "failed";
+            Log("Connection failed");
+            ClientStatus = ClientStatusEnum.Disconnected;
         }
     }
 
     private void SetStatusTimer()
     {
-        StatusTimer = new Timer(20000);
+        StatusTimer = new Timer(15000);
         StatusTimer.Elapsed += new ElapsedEventHandler(OnStatusTimer);
         StatusTimer.AutoReset = true;
         StatusTimer.Enabled = true;
     }
 
-    private void OnStatusTimer(object? source, ElapsedEventArgs e)
+    private void OnStatusTimer(object? source, ElapsedEventArgs? e = null)
     {
-        if (ServerConnection != "online")
+        if (!Client.IsConnected())
         {
+            Log("Server is offline.");
+            ClientStatus = ClientStatusEnum.Disconnected;
             return;
         }
-        //string textToSend = DateTime.Now.ToString();
-        //byte[] bytesToSend = Encoding.ASCII.GetBytes(textToSend);
-        //ConsoleLog("Sending : " + textToSend);
-        //if (TcpModuleInstance?.SendMessage(bytesToSend) == false)
-        //{
-        //    ConsoleLog("Server is offline.");
-        //    ServerConnection = "offline";
-        //}
+        else
+        {
+            //Log("Server is online -> sending...");
+        }
+        SendStatusMessage();
+    }
+
+    private async void SendStatusMessage()
+    {
+        await Task.Run(() =>
+        {
+            try
+            {
+                StatusMessage message = new StatusMessage(ClientStatus.ToString());
+                Log($"Sending status message. Status: {ClientStatus}");
+                Client?.SendMessage(message);
+            }
+            catch (Exception ex)
+            {
+                Log($"Exception: {ex.Message} {ex.GetType()}");
+            }
+        });
     }
 
     private void SetReconnectingTimer()
@@ -123,55 +153,49 @@ public partial class MainViewModel : ObservableObject
 
     private void OnReconnectingTimer(object? source, ElapsedEventArgs e)
     {
-        if (ServerConnection == "offline" || ServerConnection == "failed")
+        if (ClientStatus == ClientStatusEnum.Disconnected)
         {
-            ServerConnection = "reconnecting...";
-            ConsoleLog("Auto-reconnecting: ");
+            ClientStatus = ClientStatusEnum.Reconnecting;
+            Log("Auto-reconnecting: ");
             CreateTcpConnection();
         }
     }
 
     private async Task MoreDetailsButtonFunction()
     {
+        if (!Client.IsConnected())
+        {
+            Log("Server is offline");
+            ClientStatus = ClientStatusEnum.Disconnected;
+            return;
+        }
+
         await Task.Run(() =>
         {
-            ConsoleLog("Sending file.");
             try
             {
-                TcpModuleInstance?.SendFile(
-                    "C:\\Users\\Admin\\Desktop\\scheduler_system\\SchedulerClientApp\\Data\\input.txt");
+                BaseMessage message = new BaseMessage();
+                Log("Sending base message");
+                Client?.SendMessage(message);
             }
             catch (Exception ex)
             {
-                ConsoleLog(string.Format("Exception: {0} {1}",
-                    ex.Message, ex.GetType().ToString()));
+                Log($"Exception: {ex.Message} {ex.GetType()}");
             }
-            ConsoleLog("File sent.");
         });
     }
 
     private async Task ReconnectButtonFunction()
     {
-        await Task.Run(() =>
+        if (ClientStatus != ClientStatusEnum.Disconnected)
         {
-            TcpModuleInstance?.Disconnect();
-        });
-        ConsoleLog("Disconnected.");
+            await Task.Run(() =>
+            {
+                Client?.Disconnect();
+            });
+        }
+        Log("Disconnected");
+        ClientStatus = ClientStatusEnum.Disconnected;
         CreateTcpConnection();
-    }
-
-    private void ConsoleLog(string message, bool endl = true, bool date = true)
-    {
-        if (endl)
-        {
-            message += "\n";
-        }
-        if (date)
-        {
-            DateTime currentDateTime = DateTime.Now;
-            string formattedDate = currentDateTime.ToString("MM/dd/yyyy HH:mm:ss");
-            message = (formattedDate + "> " + message);
-        }
-        ReceivedMessages += message;
     }
 }
