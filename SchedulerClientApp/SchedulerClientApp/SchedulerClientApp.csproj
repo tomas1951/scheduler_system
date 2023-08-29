@@ -10,15 +10,6 @@
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
 
-  
-  <ItemGroup>
-    <Compile Include="..\..\SharedResources\Enums\ClientStatusEnum.cs" Link="SharedLibEnums\ClientStatusEnum.cs" />
-    <Compile Include="..\..\SharedResources\Enums\TaskStatusEnum.cs" Link="SharedLibEnums\TaskStatusEnum.cs" />
-    <Compile Include="..\..\SharedResources\Messages\BaseMessage.cs" Link="SharedLibMessages\BaseMessage.cs" />
-    <Compile Include="..\..\SharedResources\Messages\StatusMessage.cs" Link="SharedLibMessages\StatusMessage.cs" />
-    <Compile Include="..\..\SharedResources\Messages\TaskMessage.cs" Link="SharedLibMessages\TaskMessage.cs" />
-  </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.0.2" />
     <PackageReference Include="Avalonia.Controls.ItemsRepeater" Version="11.0.2" />
@@ -33,6 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="SharedLibMessages\" />
+    <ProjectReference Include="..\..\SharedResources\SharedResources.csproj" />
   </ItemGroup>
 </Project>

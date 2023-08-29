@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace SharedLibMessages;
+namespace SharedResources.Messages;
 
 [JsonObject(ItemTypeNameHandling = TypeNameHandling.Auto)]
 public class StatusMessage : BaseMessage

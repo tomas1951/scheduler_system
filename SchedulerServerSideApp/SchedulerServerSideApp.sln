@@ -5,6 +5,8 @@ VisualStudioVersion = 17.6.33829.357
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchedulerServerSideApp", "SchedulerServerSideApp.csproj", "{30F3C397-3FC2-4027-A3BC-54248C098432}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharedResources", "..\SharedResources\SharedResources.csproj", "{92D9C169-1ADF-4B48-A02E-CB61A6E5294F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{30F3C397-3FC2-4027-A3BC-54248C098432}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{30F3C397-3FC2-4027-A3BC-54248C098432}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{30F3C397-3FC2-4027-A3BC-54248C098432}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92D9C169-1ADF-4B48-A02E-CB61A6E5294F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92D9C169-1ADF-4B48-A02E-CB61A6E5294F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92D9C169-1ADF-4B48-A02E-CB61A6E5294F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92D9C169-1ADF-4B48-A02E-CB61A6E5294F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

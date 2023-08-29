@@ -14,6 +14,19 @@
             "related": ".xml"
           }
         }
+      },
+      "SharedResources/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v7.0",
+        "dependencies": {
+          "Newtonsoft.Json": "13.0.3"
+        },
+        "compile": {
+          "bin/placeholder/SharedResources.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/SharedResources.dll": {}
+        }
       }
     }
   },
@@ -47,11 +60,17 @@
         "newtonsoft.json.nuspec",
         "packageIcon.png"
       ]
+    },
+    "SharedResources/1.0.0": {
+      "type": "project",
+      "path": "../SharedResources/SharedResources.csproj",
+      "msbuildProject": "../SharedResources/SharedResources.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net7.0": [
-      "Newtonsoft.Json >= 13.0.3"
+      "Newtonsoft.Json >= 13.0.3",
+      "SharedResources >= 1.0.0"
     ]
   },
   "packageFolders": {
@@ -86,7 +105,11 @@
       "frameworks": {
         "net7.0": {
           "targetAlias": "net7.0",
-          "projectReferences": {}
+          "projectReferences": {
+            "C:\\Users\\Admin\\Desktop\\scheduler_system\\SharedResources\\SharedResources.csproj": {
+              "projectPath": "C:\\Users\\Admin\\Desktop\\scheduler_system\\SharedResources\\SharedResources.csproj"
+            }
+          }
         }
       },
       "warningProperties": {
@@ -120,7 +143,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.306\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.400\\RuntimeIdentifierGraph.json"
       }
     }
   }

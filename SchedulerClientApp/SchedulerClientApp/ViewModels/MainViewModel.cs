@@ -2,14 +2,14 @@
 using ReactiveUI;
 using SchedulerClientApp.ClientModule;
 using SchedulerClientApp.Services;
+using SchedulerClientApp.TaskManager;
+using SharedResources.Enums;
+using SharedResources.Messages;
 using System;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Input;
-using SharedLibEnums;
-using SharedLibMessages;
-using SchedulerClientApp.TaskManager;
 
 namespace SchedulerClientApp.ViewModels;
 
@@ -37,17 +37,17 @@ public partial class MainViewModel : ObservableObject
     private string clientIP = "not recognised";
     [ObservableProperty]
     private string _ReceivedMessages = string.Empty;
-    
+
     // Button handlers
     public ICommand? MoreDetailsButtonCommand { get; set; }
     public ICommand? ReconnectButtonCommand { get; set; }
-    
+
     // Macros
-    public delegate void MacroDelegate(string message, bool endl = true, 
+    public delegate void MacroDelegate(string message, bool endl = true,
         bool date = true);
 
     // Tcp connection properties
-    private Client Client { get; set; }
+    private SchedulerClient Client { get; set; }
     private ComputationalTask? CurrentTask;
     private LogService LogService;
     private Timer? ReconnectingTimer;
@@ -59,7 +59,7 @@ public partial class MainViewModel : ObservableObject
         LogService = new LogService(this);
         Log = LogService.Log;
         Log("Scheduler client app started.");
-        Client = new Client(LogService);
+        Client = new SchedulerClient(LogService);
         InitHandlers();
         SetReconnectingTimer();
         SetStatusTimer();

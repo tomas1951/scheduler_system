@@ -1,4 +1,4 @@
-﻿namespace SharedLibEnums;
+﻿namespace SharedResources.Enums;
 
 public enum ClientStatusEnum
 {

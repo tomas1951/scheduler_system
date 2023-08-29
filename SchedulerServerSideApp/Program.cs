@@ -1,77 +1,77 @@
-﻿namespace SchedulerServerSideApp
+﻿using SchedulerServerSideApp.ServerModule;
+
+namespace SchedulerServerSideApp;
+
+internal class Program
 {
-    internal class Program
+    private static event EventHandler<string>? ReceivedCommandHandler;
+    const int PORT_NO = 1234;
+
+    static void Main(string[] args)
     {
-        private static event EventHandler<string>? ReceivedCommandHandler;
-        const int PORT_NO = 1234;
-        private static Server Server = new Server(PORT_NO);
+        // Unhandled exceptions catcher
+        AppDomain currentDomain = AppDomain.CurrentDomain;
+        currentDomain.UnhandledException += 
+            new UnhandledExceptionEventHandler(CatchUnhandledExceptions);
+        
+        // Handler for console commands
+        ReceivedCommandHandler += OnReceivedCommand;
+        Thread commandsThead = new Thread(ReadConsoleCommands);
+        commandsThead.Start();
 
-        static void Main(string[] args)
+        //Start the server
+        Server Server = new Server(PORT_NO);
+
+        // Start the scheduler
+        //Scheduler scheduler = new Scheduler();
+        //scheduler.Start();
+
+        while (true)
         {
-            // Exception catcher handler
-            AppDomain currentDomain = AppDomain.CurrentDomain;
-            currentDomain.UnhandledException += 
-                new UnhandledExceptionEventHandler(CatchUnhandledExceptions);
-            
-            // Console commands
-            ReceivedCommandHandler += OnReceivedCommand;
-            Thread commandsThead = new Thread(ReadConsoleCommands);
-            commandsThead.Start();
-
-            // Start the server
-            Server.Start();
-
-            // Start the scheduler
-            //Scheduler scheduler = new Scheduler();
-            //scheduler.Start();
-
-            while (true)
-            {
-                Thread.Sleep(60000);
-            }
+            Thread.Sleep(60000);
         }
+    }
 
-        private static void ReadConsoleCommands()
+    private static void ReadConsoleCommands()
+    {
+        Console.WriteLine("Type 'exit' to quit, or any " +
+            "command to process it:");
+
+        while (true)
         {
-            Console.WriteLine("Type 'exit' to quit, or any " +
-                "command to process it:");
+            string? command = Console.ReadLine();
 
-            while (true)
+            if (command == "exit")
             {
-                string? command = Console.ReadLine();
-
-                if (command == "exit")
-                {
-                    Environment.Exit(0);
-                }
-                    
-                // Raise the command received event
-                ReceivedCommandHandler?.Invoke(null, command);
+                Environment.Exit(0);
             }
-        }
-
-        private static void OnReceivedCommand(object? sender, string command)
-        {
-            Console.WriteLine($"Command received: {command}");
                 
-            switch (command)
-                {
-                    case "test task":
-                        Server.SendTask(); 
-                        break;
-                    default:
-                        Console.WriteLine("This command does not exist. Get some help.");
-                        break;
-                }
+            // Raise the command received event
+            ReceivedCommandHandler?.Invoke(null, command ?? "");
         }
+    }
 
-        static void CatchUnhandledExceptions(object sender, 
-            UnhandledExceptionEventArgs args)
-        {
-            Exception e = (Exception) args.ExceptionObject;
-            System.Console.WriteLine("MyHandler caught : " + e.Message);
-            System.Console.WriteLine("Runtime terminating: {0}", 
-                args.IsTerminating);
-        }
+    private static void OnReceivedCommand(object? sender, string command)
+    {
+        Console.WriteLine($"Command received: {command}");
+            
+        switch (command)
+            {
+                case "test task":
+                    //Server.SendTestTask();
+                    break;
+                default:
+                    Console.WriteLine("This command does not exist. Get some help.");
+                    break;
+            }
+    }
+
+    static void CatchUnhandledExceptions(object sender, 
+        UnhandledExceptionEventArgs args)
+    {
+        Exception e = (Exception) args.ExceptionObject;
+        Console.WriteLine("MyHandler caught : " + e.Message);
+        Console.WriteLine("Runtime terminating: {0}", 
+            args.IsTerminating);
     }
 }

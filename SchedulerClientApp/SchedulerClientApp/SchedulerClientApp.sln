@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchedulerClientApp", "Sched
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SchedulerClientApp.Desktop", "..\SchedulerClientApp.Desktop\SchedulerClientApp.Desktop.csproj", "{9571ADEA-B6C7-4BD4-9A43-E0A1AAE3CF9F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedResources", "..\..\SharedResources\SharedResources.csproj", "{6628C9FC-CF8D-47EF-9D57-0C2C8E7A8D94}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{9571ADEA-B6C7-4BD4-9A43-E0A1AAE3CF9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9571ADEA-B6C7-4BD4-9A43-E0A1AAE3CF9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9571ADEA-B6C7-4BD4-9A43-E0A1AAE3CF9F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6628C9FC-CF8D-47EF-9D57-0C2C8E7A8D94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6628C9FC-CF8D-47EF-9D57-0C2C8E7A8D94}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6628C9FC-CF8D-47EF-9D57-0C2C8E7A8D94}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6628C9FC-CF8D-47EF-9D57-0C2C8E7A8D94}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

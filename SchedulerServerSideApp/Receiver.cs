@@ -1,7 +1,8 @@
 ﻿using Newtonsoft.Json;
+using SchedulerServerSideApp.ServerModule;
+using SharedResources.Enums;
+using SharedResources.Messages;
 using System.Net.Sockets;
-using SharedLibEnums;
-using SharedLibMessages;
 
 namespace SchedulerServerSideApp;
 
@@ -26,7 +27,7 @@ internal class Receiver
 
     public void Start()
     {
-        System.Console.WriteLine("creating receiving and sending thread");
+        Console.WriteLine("creating receiving and sending thread");
 
         Thread receivingThread = new Thread(ReceivingMethod);
         receivingThread.IsBackground = true;
@@ -89,15 +90,15 @@ internal class Receiver
                     string? inputString = reader.ReadLine();
                     if (inputString is null)
                     {
-                        System.Console.WriteLine("inputString was none -> skip");
-                        System.Console.WriteLine("Client {0} left the server. (Unable to read data)", GetClientIP(Client));
+                        Console.WriteLine("inputString was none -> skip");
+                        Console.WriteLine("Client {0} left the server. (Unable to read data)", GetClientIP(Client));
                         break;
                     }
 
                     var msg = JsonConvert.DeserializeObject<BaseMessage>(inputString, JsonSettings);
                     if (msg is null)
                     {
-                        System.Console.WriteLine("msg was none -> skip");
+                        Console.WriteLine("msg was none -> skip");
                         break;
                     }
 
@@ -108,7 +109,7 @@ internal class Receiver
                     else
                     {
                         Type type = msg.GetType();
-                        System.Console.WriteLine("Message type: {0}", type.ToString());
+                        Console.WriteLine("Message type: {0}", type.ToString());
                     }
 
                     OnMessageReceived(msg);
@@ -117,7 +118,7 @@ internal class Receiver
                 {
                     if (ex.Message.StartsWith("Unable to read data"))
                     {
-                        System.Console.WriteLine("Client {0} left the server", Client.Client.RemoteEndPoint?.ToString());
+                        Console.WriteLine("Client {0} left the server", Client.Client.RemoteEndPoint?.ToString());
                     }
                     else
                     {

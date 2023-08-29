@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
-using SharedLibEnums;
+using SharedResources.Enums;
 using System;
 
-namespace SharedLibMessages;
+namespace SharedResources.Messages;
 
 [JsonObject(ItemTypeNameHandling = TypeNameHandling.Auto)]
 public class TaskMessage : BaseMessage

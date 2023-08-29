@@ -25,6 +25,5 @@ public class LogService
         }
         mainViewModel.ReceivedMessages += message;
 
-
     }
 }

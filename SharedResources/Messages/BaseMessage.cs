@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 
-namespace SharedLibMessages;
+namespace SharedResources.Messages;
 
 public class BaseMessage
 {

@@ -1,0 +1,12 @@
+C:\Users\Admin\Desktop\scheduler_system\SharedResources\bin\Release\net7.0\SharedResources.deps.json
+C:\Users\Admin\Desktop\scheduler_system\SharedResources\bin\Release\net7.0\SharedResources.dll
+C:\Users\Admin\Desktop\scheduler_system\SharedResources\bin\Release\net7.0\SharedResources.pdb
+C:\Users\Admin\Desktop\scheduler_system\SharedResources\obj\Release\net7.0\SharedResources.csproj.AssemblyReference.cache
+C:\Users\Admin\Desktop\scheduler_system\SharedResources\obj\Release\net7.0\SharedResources.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Admin\Desktop\scheduler_system\SharedResources\obj\Release\net7.0\SharedResources.AssemblyInfoInputs.cache
+C:\Users\Admin\Desktop\scheduler_system\SharedResources\obj\Release\net7.0\SharedResources.AssemblyInfo.cs
+C:\Users\Admin\Desktop\scheduler_system\SharedResources\obj\Release\net7.0\SharedResources.csproj.CoreCompileInputs.cache
+C:\Users\Admin\Desktop\scheduler_system\SharedResources\obj\Release\net7.0\SharedResources.dll
+C:\Users\Admin\Desktop\scheduler_system\SharedResources\obj\Release\net7.0\refint\SharedResources.dll
+C:\Users\Admin\Desktop\scheduler_system\SharedResources\obj\Release\net7.0\SharedResources.pdb
+C:\Users\Admin\Desktop\scheduler_system\SharedResources\obj\Release\net7.0\ref\SharedResources.dll
