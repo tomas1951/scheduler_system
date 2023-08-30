@@ -80,9 +80,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Admin\\Desktop\\scheduler_system\\SchedulerServerSideApp\\SchedulerServerSideApp.csproj",
-      "projectName": "SchedulerServerSideApp",
-      "projectPath": "C:\\Users\\Admin\\Desktop\\scheduler_system\\SchedulerServerSideApp\\SchedulerServerSideApp.csproj",
+      "projectUniqueName": "C:\\Users\\Admin\\Desktop\\scheduler_system\\SchedulerServerSideApp\\SchedulerServerApp.csproj",
+      "projectName": "SchedulerServerApp",
+      "projectPath": "C:\\Users\\Admin\\Desktop\\scheduler_system\\SchedulerServerSideApp\\SchedulerServerApp.csproj",
       "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
       "outputPath": "C:\\Users\\Admin\\Desktop\\scheduler_system\\SchedulerServerSideApp\\obj\\",
       "projectStyle": "PackageReference",

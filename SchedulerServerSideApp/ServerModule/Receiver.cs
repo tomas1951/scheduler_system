@@ -1,10 +1,9 @@
 ﻿using Newtonsoft.Json;
-using SchedulerServerSideApp.ServerModule;
 using SharedResources.Enums;
 using SharedResources.Messages;
 using System.Net.Sockets;
 
-namespace SchedulerServerSideApp;
+namespace SchedulerServerApp.ServerModule;
 
 internal class Receiver
 {
@@ -122,13 +121,13 @@ internal class Receiver
                     }
                     else
                     {
-                        System.Console.WriteLine("Exception: {0} {1}", ex.Message, ex.GetType().Name);
+                        Console.WriteLine("Exception: {0} {1}", ex.Message, ex.GetType().Name);
                     }
                     break;
                 }
                 catch (Exception ex)
                 {
-                    System.Console.WriteLine("Exception: {0} {1}", ex.Message, ex.GetType().Name);
+                    Console.WriteLine("Exception: {0} {1}", ex.Message, ex.GetType().Name);
                     break;
                 }
             }
@@ -140,7 +139,7 @@ internal class Receiver
 
     private void OnMessageReceived(BaseMessage msg)
     {
-        System.Console.WriteLine("On message Received method called - I can do anything from here");
+        Console.WriteLine("On message Received method called - I can do anything from here");
     }
 
     private string GetClientIP(TcpClient client)
@@ -158,6 +157,6 @@ internal class Receiver
 
     private void PrintMessage(TcpClient client, StatusMessage message)
     {
-        System.Console.WriteLine(string.Format("Host: {0}, Status: {1}", GetClientIP(client), message.CurrentStatus));
+        Console.WriteLine(string.Format("Host: {0}, Status: {1}", GetClientIP(client), message.CurrentStatus));
     }
 }

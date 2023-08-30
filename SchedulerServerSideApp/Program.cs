@@ -1,11 +1,16 @@
-﻿using SchedulerServerSideApp.ServerModule;
+﻿using SchedulerServerApp.ServerModule;
 
-namespace SchedulerServerSideApp;
+namespace SchedulerServerApp;
 
+/// <summary>
+/// This is the starting point of a Scheduler System Server side.
+/// 
+/// </summary>
 internal class Program
 {
     private static event EventHandler<string>? ReceivedCommandHandler;
     const int PORT_NO = 1234;
+    public static Server? Server { get; set; }
 
     static void Main(string[] args)
     {
@@ -19,8 +24,7 @@ internal class Program
         Thread commandsThead = new Thread(ReadConsoleCommands);
         commandsThead.Start();
 
-        //Start the server
-        Server Server = new Server(PORT_NO);
+        Server = new Server(PORT_NO);
 
         // Start the scheduler
         //Scheduler scheduler = new Scheduler();
@@ -40,12 +44,6 @@ internal class Program
         while (true)
         {
             string? command = Console.ReadLine();
-
-            if (command == "exit")
-            {
-                Environment.Exit(0);
-            }
-                
             // Raise the command received event
             ReceivedCommandHandler?.Invoke(null, command ?? "");
         }
@@ -57,8 +55,14 @@ internal class Program
             
         switch (command)
             {
+                case "exit":
+                    Environment.Exit(0);
+                    break;
                 case "test task":
-                    //Server.SendTestTask();
+                    Server?.TestSendTask();
+                    break;
+                case "test disconnect":
+                    Server?.TestDisconnect();
                     break;
                 default:
                     Console.WriteLine("This command does not exist. Get some help.");

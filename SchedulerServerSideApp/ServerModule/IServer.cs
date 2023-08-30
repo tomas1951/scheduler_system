@@ -2,7 +2,7 @@
 using System.Net.Sockets;
 using System.Timers;
 
-namespace SchedulerServerSideApp.ServerModule;
+namespace SchedulerServerApp.ServerModule;
 
 /// <summary>
 /// Interface <c>IServer</c> defines functionality of a server class
@@ -54,4 +54,5 @@ public interface IServer
     void OnMessageReceived(object? sender, MessageFromClient message);
 
     void SendMessageToClient(TcpClient client, BaseMessage message);
+    void DisconnectClient(TcpClient client);
 }

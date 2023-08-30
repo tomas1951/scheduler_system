@@ -4,7 +4,7 @@ using System.Timers;
 using Newtonsoft.Json;
 using SharedResources.Messages;
 
-namespace SchedulerServerSideApp.ServerModule;
+namespace SchedulerServerApp.ServerModule;
 
 public class Server : IServer
 {
@@ -12,7 +12,6 @@ public class Server : IServer
     public bool IsStarted { get; set; }
     public TcpListener Listener { get; set; }
     public List<TcpClient> ConnectedClients { get; set; }
-    //System.Timers.Timer IServer.ListeningTimer { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
     // Thread signal
     public static ManualResetEvent tcpClientConnected =
@@ -103,6 +102,10 @@ public class Server : IServer
         {
             while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) != 0)
             {
+                if (client is null)
+                {
+                    throw new NullReferenceException("Client reference is null.");
+                }
                 string message = Encoding.ASCII.GetString(buffer, 0, bytesRead);
                 // Raise the OnMessageReceived event
                 MessageReceivedEvent?.Invoke(null,
@@ -111,16 +114,19 @@ public class Server : IServer
         }
         catch (Exception e)
         {
-            Console.WriteLine($"Exception while reading client {GetClientIP(client)} " +
-                $"message: {e.Message}");
-        }
-        finally
-        {
-            Console.WriteLine("Client {0} left the server. (Unable to read data)",
-                GetClientIP(client));
-            ConnectedClients.Remove(client);
-            client.Close();
-            ListenForNewClients();
+            if (client is null)
+            {
+                Console.WriteLine("Client disconnected.");
+            }
+            else
+            {
+                Console.Write($"Client {GetClientIP(client)} left the server. " +
+                    $"(Unable to read data) ");
+                Console.WriteLine($"Exception while reading client {GetClientIP(client)} " +
+                    $"message: {e.Message}");
+                DisconnectClient(client);
+                ListenForNewClients();
+            }
         }
     }
 
@@ -159,14 +165,14 @@ public class Server : IServer
 
     private static string GetClientIP(TcpClient client)
     {
-        string? name = client.Client.RemoteEndPoint?.ToString();
+        string? name = client?.Client?.RemoteEndPoint?.ToString() ?? null;
         if (name is not null)
         {
             return name;
         }
         else
         {
-            return "";
+            return "--name unknown--";
         }
     }
 
@@ -199,13 +205,38 @@ public class Server : IServer
         });
     }
 
-    public void SendTestTask()
+    public void TestSendTask()
     {
-        TcpClient client = ConnectedClients[0];
+        TcpClient? client = ConnectedClients.LastOrDefault();
+
+        if (client is null)
+        {
+            Console.WriteLine("No connected clients.");
+            return;
+        }
 
         TaskMessage newTask = new TaskMessage();
         newTask.ExeFilePath = @"C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Audacity.lnk";
 
         SendMessageToClient(client, newTask);
+    }
+
+    public void TestDisconnect()
+    {
+        TcpClient? client = ConnectedClients.LastOrDefault();
+        
+        if (client is null)
+        {
+            Console.WriteLine("No connected clients.");
+            return;
+        }
+
+        DisconnectClient(client);
+    }
+
+    public void DisconnectClient(TcpClient client)
+    {
+        ConnectedClients.Remove(client);
+        client?.Close();
     }
 }
