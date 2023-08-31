@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace SchedulerClientApp.TaskManager;
 
-namespace SchedulerClientApp.TaskManager
+public interface IComputationalTask
 {
-    internal interface IComputationalTask
-    {
-    }
 }

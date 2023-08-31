@@ -2,7 +2,7 @@
 
 namespace SchedulerClientApp.Services;
 
-public class LogService
+public class LogService : ILogService
 {
     MainViewModel mainViewModel;
 
