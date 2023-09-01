@@ -2,7 +2,7 @@
 
 namespace SchedulerClientApp.Services;
 
-public class LogService
+public class LogService : ILogService
 {
     MainViewModel mainViewModel;
 
@@ -24,7 +24,6 @@ public class LogService
             message = (formattedDate + "> " + message);
         }
         mainViewModel.ReceivedMessages += message;
-
 
     }
 }

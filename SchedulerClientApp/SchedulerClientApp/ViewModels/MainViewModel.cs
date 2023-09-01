@@ -2,27 +2,30 @@
 using ReactiveUI;
 using SchedulerClientApp.ClientModule;
 using SchedulerClientApp.Services;
+using SchedulerClientApp.TaskManager;
+using SharedResources.Enums;
+using SharedResources.Messages;
 using System;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Input;
-using SharedLibEnums;
-using SharedLibMessages;
-using SchedulerClientApp.TaskManager;
 
 namespace SchedulerClientApp.ViewModels;
 
+/// <summary>
+/// <c>MainViewModel</c> class represents a middle layer between the code and
+/// the User Interface. 
+/// </summary>
 public partial class MainViewModel : ObservableObject
 {
     // These properties are bound to the labels in User Interface
-    // Note: 
-    // Capital letters properties are auto-generated and using 
-    // non-capital variables in code will lead to errors
+    // Note: Capital letters properties are auto-generated and using non-capital
+    // variables in code will lead to errors.
     [ObservableProperty]
     private string serverConnection = "deprecated";
     [ObservableProperty]
-    private ClientStatusEnum clientStatus = ClientStatusEnum.Disconnected;
+    private ClientStatus clientStatus = ClientStatus.Disconnected;
     [ObservableProperty]
     private bool taskAssigned = false;
     [ObservableProperty]
@@ -37,17 +40,17 @@ public partial class MainViewModel : ObservableObject
     private string clientIP = "not recognised";
     [ObservableProperty]
     private string _ReceivedMessages = string.Empty;
-    
+
     // Button handlers
     public ICommand? MoreDetailsButtonCommand { get; set; }
     public ICommand? ReconnectButtonCommand { get; set; }
-    
+
     // Macros
-    public delegate void MacroDelegate(string message, bool endl = true, 
+    public delegate void MacroDelegate(string message, bool endl = true,
         bool date = true);
 
     // Tcp connection properties
-    private Client Client { get; set; }
+    private SchedulerTcpClient Client { get; set; }
     private ComputationalTask? CurrentTask;
     private LogService LogService;
     private Timer? ReconnectingTimer;
@@ -56,18 +59,20 @@ public partial class MainViewModel : ObservableObject
 
     public MainViewModel()
     {
+        // Start up log service
         LogService = new LogService(this);
         Log = LogService.Log;
         Log("Scheduler client app started.");
-        Client = new Client(LogService);
-        InitHandlers();
+        // Create Scheduler TCP Client for communication
+        Client = new SchedulerTcpClient(LogService);
+
+        InitializeHandlers();
         SetReconnectingTimer();
         SetStatusTimer();
-        CreateTcpConnection();
-        OnStatusTimer(null);
+        ConnectToServer();
     }
 
-    public void InitHandlers()
+    public void InitializeHandlers()
     {
         // More Detains Button Handler
         MoreDetailsButtonCommand = ReactiveCommand.Create(MoreDetailsButtonFunction);
@@ -75,7 +80,7 @@ public partial class MainViewModel : ObservableObject
         ReconnectButtonCommand = ReactiveCommand.Create(ReconnectButtonFunction);
     }
 
-    private void CreateTcpConnection()
+    private void ConnectToServer()
     {
         Log("Connecting to a server...");
         try
@@ -94,12 +99,13 @@ public partial class MainViewModel : ObservableObject
         if (Client is not null && Client.IsConnected())
         {
             Log("Connection successful");
-            ClientStatus = ClientStatusEnum.Connected;
+            ClientStatus = ClientStatus.Connected;
+            OnStatusTimer(null);
         }
         else
         {
             Log("Connection failed");
-            ClientStatus = ClientStatusEnum.Disconnected;
+            ClientStatus = ClientStatus.Disconnected;
         }
     }
 
@@ -116,7 +122,7 @@ public partial class MainViewModel : ObservableObject
         if (!Client.IsConnected())
         {
             Log("Server is offline.");
-            ClientStatus = ClientStatusEnum.Disconnected;
+            ClientStatus = ClientStatus.Disconnected;
             return;
         }
         else
@@ -153,11 +159,11 @@ public partial class MainViewModel : ObservableObject
 
     private void OnReconnectingTimer(object? source, ElapsedEventArgs e)
     {
-        if (ClientStatus == ClientStatusEnum.Disconnected)
+        if (ClientStatus == ClientStatus.Disconnected)
         {
-            ClientStatus = ClientStatusEnum.Reconnecting;
+            ClientStatus = ClientStatus.Reconnecting;
             Log("Auto-reconnecting: ");
-            CreateTcpConnection();
+            ConnectToServer();
         }
     }
 
@@ -166,7 +172,7 @@ public partial class MainViewModel : ObservableObject
         if (!Client.IsConnected())
         {
             Log("Server is offline");
-            ClientStatus = ClientStatusEnum.Disconnected;
+            ClientStatus = ClientStatus.Disconnected;
             return;
         }
 
@@ -187,7 +193,7 @@ public partial class MainViewModel : ObservableObject
 
     private async Task ReconnectButtonFunction()
     {
-        if (ClientStatus != ClientStatusEnum.Disconnected)
+        if (ClientStatus != ClientStatus.Disconnected)
         {
             await Task.Run(() =>
             {
@@ -195,7 +201,7 @@ public partial class MainViewModel : ObservableObject
             });
         }
         Log("Disconnected");
-        ClientStatus = ClientStatusEnum.Disconnected;
-        CreateTcpConnection();
+        ClientStatus = ClientStatus.Disconnected;
+        ConnectToServer();
     }
 }

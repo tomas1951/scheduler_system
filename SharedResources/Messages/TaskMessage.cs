@@ -1,8 +1,6 @@
 ﻿using Newtonsoft.Json;
-using SharedLibEnums;
-using System;
 
-namespace SharedLibMessages;
+namespace SharedResources.Messages;
 
 [JsonObject(ItemTypeNameHandling = TypeNameHandling.Auto)]
 public class TaskMessage : BaseMessage
@@ -11,7 +9,7 @@ public class TaskMessage : BaseMessage
     public string Name { get; set; }
     public string UserID { get; set; }
     public string bucketId { get; set; }
-    public TaskStatusEnum Status { get; set; }
+    public Enums.TaskStatus Status { get; set; }
     public int Priority { get; set; }
     public DateTime TimeCreated { get; set; }
     public string ExeFilePath { get; set; }
@@ -24,7 +22,10 @@ public class TaskMessage : BaseMessage
         TypeNameHandling = TypeNameHandling.All
     };
 
-    public TaskMessage(string iD, string name, string userID, string bucketId, TaskStatusEnum status, int priority, DateTime timeCreated, string exeFilePath, string inputFilesPath, string outputFilesPath, string operatingSystem)
+    public TaskMessage(string iD, string name, string userID, string bucketId, 
+                       Enums.TaskStatus status, int priority, DateTime timeCreated, 
+                       string exeFilePath, string inputFilesPath, string outputFilesPath, 
+                       string operatingSystem)
     {
         ID = iD;
         Name = name;
@@ -45,7 +46,7 @@ public class TaskMessage : BaseMessage
         Name = "DefaultName";
         UserID = "DefaultUserID";
         bucketId = "DefaultBucketID";
-        Status = TaskStatusEnum.Waiting;
+        Status = Enums.TaskStatus.Waiting;
         Priority = 0;
         TimeCreated = DateTime.Now;
         ExeFilePath = "";
