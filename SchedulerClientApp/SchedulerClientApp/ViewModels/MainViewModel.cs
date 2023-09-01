@@ -204,4 +204,11 @@ public partial class MainViewModel : ObservableObject
         ClientStatus = ClientStatus.Disconnected;
         ConnectToServer();
     }
+
+
+
+
+
+
+
 }
