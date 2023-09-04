@@ -1,5 +1,7 @@
 ﻿using Newtonsoft.Json;
 using SchedulerClientApp.Services;
+using SchedulerClientApp.ViewModels;
+using SharedResources.Enums;
 using SharedResources.Messages;
 using System;
 using System.Collections.Generic;
@@ -9,12 +11,17 @@ using System.Threading;
 
 namespace SchedulerClientApp.ClientModule;
 
-public class SchedulerTcpClient : ISchedulerTcpClient
+public class SchedulerClient : ISchedulerClient
 {
     public TcpClient TcpClient { get; set; }
     public List<BaseMessage> MessageQueue { get; set; }
-    //public ClientStatusEnum Status = ClientStatusEnum.Disconnected;
     public LogService LogService { get; set; }
+    //public ClientStatusEnum Status = ClientStatusEnum.Disconnected;
+
+    // Log macro
+    public delegate void MacroDelegate(string message, bool endl = true,
+        bool date = true);
+    private readonly MacroDelegate Log;
 
     // For serializing json messages
     private static JsonSerializerSettings JsonSettings = new JsonSerializerSettings
@@ -22,33 +29,114 @@ public class SchedulerTcpClient : ISchedulerTcpClient
         TypeNameHandling = TypeNameHandling.Auto
     };
 
-    public SchedulerTcpClient(LogService logService)
+    public SchedulerClient(LogService logService)
     {
         LogService = logService;
         TcpClient = new TcpClient();
         MessageQueue = new List<BaseMessage>();
+        Log = LogService.Log;
     }
 
-    public void Connect(string address, int port)
+    //private void ConnectToServer()
+    //{
+    //    Log("Connecting to a server...");
+    //    try
+    //    {
+    //        Client.Connect("127.0.0.1", 1234);
+    //    }
+    //    catch (SocketException)
+    //    {
+    //        Log("Server is offline");
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        Log($"Exception: {ex.GetType().Name} - {ex.Message}");
+    //    }
+
+    //    if (Client is not null && Client.IsConnected())
+    //    {
+    //        Log("Connection successful");
+    //        ClientStatus = ClientStatus.Connected;
+    //        OnStatusTimer(null);
+    //    }
+    //    else
+    //    {
+    //        Log("Connection failed");
+    //        ClientStatus = ClientStatus.Disconnected;
+    //    }
+    //}
+
+    public ClientStatus Connect(string address, int port)
     {
-        TcpClient = new TcpClient();
-        TcpClient.Connect(address, port);
-        //Status = ClientStatusEnum.Connected;
-        TcpClient.ReceiveBufferSize = 1024;
-        TcpClient.SendBufferSize = 1024;
+        
+        bool exceptionCaught = false;
 
-        Thread receivingThread = new Thread(ReceivingMethod);
-        receivingThread.IsBackground = true;
-        receivingThread.Start();
+        try
+        {
+            TcpClient.Connect(address, port);
+        }
+        catch (SocketException)
+        {
+            Log($"Server is offline.");
+            exceptionCaught = true;
+        }
+        catch (Exception ex)
+        {
+            Log($"Exception: {ex.GetType().Name} - {ex.Message}");
+            exceptionCaught = true;
+        }
 
-        Thread sendingThread = new Thread(SendingMethod);
-        sendingThread.IsBackground = true;
-        sendingThread.Start();
+        if (!exceptionCaught && IsConnected())
+        {
+            TcpClient.ReceiveBufferSize = 1024;
+            TcpClient.SendBufferSize = 1024;
+
+            Thread receivingThread = new Thread(ReceivingMethod);
+            receivingThread.IsBackground = true;
+            receivingThread.Start();
+
+            Thread sendingThread = new Thread(SendingMethod);
+            sendingThread.IsBackground = true;
+            sendingThread.Start();
+
+            Log("Connection successful");
+            return ClientStatus.Connected;
+        }
+
+        return ClientStatus.Disconnected;
     }
 
     public bool IsConnected()
     {
-        return TcpClient.Connected; // NOTE - does it really test connectivity?
+        Socket sock = TcpClient.Client;
+        bool blockingState = sock.Blocking;
+        try
+        {
+            byte [] tmp = new byte[1];
+
+            sock.Blocking = false;
+            sock.Send(tmp, 0, 0);
+            return true;
+        }
+        catch (SocketException e) 
+        {
+            // 10035 == WSAEWOULDBLOCK
+            if (e.NativeErrorCode.Equals(10035))
+                return true;
+            else
+            {
+                return false;
+            }
+        }
+        finally
+        {
+            sock.Blocking = blockingState;
+        }
+    }
+
+    public ClientStatus GetConnectionStatus()
+    {
+        return IsConnected() ? ClientStatus.Connected : ClientStatus.Disconnected;
     }
 
     public void Disconnect()

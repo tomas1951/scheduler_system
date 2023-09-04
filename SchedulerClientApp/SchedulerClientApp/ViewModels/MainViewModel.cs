@@ -45,32 +45,53 @@ public partial class MainViewModel : ObservableObject
     public ICommand? MoreDetailsButtonCommand { get; set; }
     public ICommand? ReconnectButtonCommand { get; set; }
 
-    // Macros
+    // Log macro
     public delegate void MacroDelegate(string message, bool endl = true,
         bool date = true);
+    private readonly MacroDelegate Log;
+
+    // Time of timers in milliseconds
+    private const int ReconnectingTimerInterval = 5000;
+    private const int StatusTimerInterval = 5000;
+
+    // Server info
+    private const string ServerIP = "127.0.0.1";
+    private const int Port = 1234;
 
     // Tcp connection properties
-    private SchedulerTcpClient Client { get; set; }
-    private ComputationalTask? CurrentTask;
+    private SchedulerClient Client { get; set; }
+    //private ComputationalTask? CurrentTask;
     private LogService LogService;
     private Timer? ReconnectingTimer;
     private Timer? StatusTimer;
-    private MacroDelegate Log;
-
+    
     public MainViewModel()
     {
         // Start up log service
         LogService = new LogService(this);
         Log = LogService.Log;
-        Log("Scheduler client app started.");
+        Log("SCHEDULER SYSTEM CLIENT APP started.");
+        
+        // Catching unhandled exceptions
+        AppDomain currentDomain = AppDomain.CurrentDomain;
+        currentDomain.UnhandledException += 
+            new UnhandledExceptionEventHandler(CatchUnhandledExceptions);
+
         // Create Scheduler TCP Client for communication
-        Client = new SchedulerTcpClient(LogService);
+        Client = new SchedulerClient(LogService);
 
         InitializeHandlers();
         SetReconnectingTimer();
         SetStatusTimer();
-        ConnectToServer();
+
+        // Connect to the server
+        Log($"Connecting to a server {ServerIP}:{Port} ...");
+        ClientStatus = Client.Connect(ServerIP, Port);
     }
+
+    /***
+    Handler functions
+    ***/
 
     public void InitializeHandlers()
     {
@@ -80,38 +101,12 @@ public partial class MainViewModel : ObservableObject
         ReconnectButtonCommand = ReactiveCommand.Create(ReconnectButtonFunction);
     }
 
-    private void ConnectToServer()
-    {
-        Log("Connecting to a server...");
-        try
-        {
-            Client.Connect("127.0.0.1", 1234);
-        }
-        catch (SocketException)
-        {
-            Log("Server is offline");
-        }
-        catch (Exception ex)
-        {
-            Log($"Exception: {ex.GetType().Name} - {ex.Message}");
-        }
-
-        if (Client is not null && Client.IsConnected())
-        {
-            Log("Connection successful");
-            ClientStatus = ClientStatus.Connected;
-            OnStatusTimer(null);
-        }
-        else
-        {
-            Log("Connection failed");
-            ClientStatus = ClientStatus.Disconnected;
-        }
-    }
-
+    /***
+    Status Timer functions
+    ***/
     private void SetStatusTimer()
     {
-        StatusTimer = new Timer(15000);
+        StatusTimer = new Timer(StatusTimerInterval);
         StatusTimer.Elapsed += new ElapsedEventHandler(OnStatusTimer);
         StatusTimer.AutoReset = true;
         StatusTimer.Enabled = true;
@@ -119,17 +114,11 @@ public partial class MainViewModel : ObservableObject
 
     private void OnStatusTimer(object? source, ElapsedEventArgs? e = null)
     {
-        if (!Client.IsConnected())
+        ClientStatus = Client.GetConnectionStatus();
+        if (ClientStatus == ClientStatus.Connected)
         {
-            Log("Server is offline.");
-            ClientStatus = ClientStatus.Disconnected;
-            return;
+            SendStatusMessage();
         }
-        else
-        {
-            //Log("Server is online -> sending...");
-        }
-        SendStatusMessage();
     }
 
     private async void SendStatusMessage()
@@ -149,9 +138,13 @@ public partial class MainViewModel : ObservableObject
         });
     }
 
+    /***
+    Reconnecting Timer functions
+    ***/
+
     private void SetReconnectingTimer()
     {
-        ReconnectingTimer = new Timer(15000);
+        ReconnectingTimer = new Timer(ReconnectingTimerInterval);
         ReconnectingTimer.Elapsed += new ElapsedEventHandler(OnReconnectingTimer);
         ReconnectingTimer.AutoReset = true;
         ReconnectingTimer.Enabled = true;
@@ -159,14 +152,23 @@ public partial class MainViewModel : ObservableObject
 
     private void OnReconnectingTimer(object? source, ElapsedEventArgs e)
     {
+        ClientStatus = Client.GetConnectionStatus();
         if (ClientStatus == ClientStatus.Disconnected)
         {
             ClientStatus = ClientStatus.Reconnecting;
-            Log("Auto-reconnecting: ");
-            ConnectToServer();
+            Log("Auto-reconnecting... ");
+            ClientStatus = Client.Connect(ServerIP, Port);
         }
     }
 
+    /***
+    BUTTON FUNCTIONS
+    ***/
+
+    /// <summary>
+    /// More Details button function.
+    /// </summary>
+    /// <returns></returns>
     private async Task MoreDetailsButtonFunction()
     {
         if (!Client.IsConnected())
@@ -191,9 +193,13 @@ public partial class MainViewModel : ObservableObject
         });
     }
 
+    /// <summary>
+    /// Reconnect button function.
+    /// </summary>
+    /// <returns></returns>
     private async Task ReconnectButtonFunction()
     {
-        if (ClientStatus != ClientStatus.Disconnected)
+        if (Client.IsConnected())
         {
             await Task.Run(() =>
             {
@@ -201,9 +207,21 @@ public partial class MainViewModel : ObservableObject
             });
         }
         Log("Disconnected");
-        ClientStatus = ClientStatus.Disconnected;
-        ConnectToServer();
     }
 
+    /// <summary>
+    /// Exceptions catcher helper function.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="args"></param>
+    void CatchUnhandledExceptions(object sender, 
+    UnhandledExceptionEventArgs args)
+    {
+        Exception e = (Exception) args.ExceptionObject;
+        Log($"MyHandler caught : {e.Message}");
+        Log($"Runtime terminating: {args.IsTerminating}");
+        Client = new SchedulerClient(LogService);
 
+        //ClientStatus = Client.Connect(ServerIP, Port);
+    }
 }

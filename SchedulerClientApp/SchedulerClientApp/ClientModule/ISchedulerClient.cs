@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Sockets;
 using SchedulerClientApp.Services;
+using SharedResources.Enums;
 
 namespace SchedulerClientApp.ClientModule;
 
@@ -10,7 +11,7 @@ namespace SchedulerClientApp.ClientModule;
 /// in the Scheduler System.
 /// 
 /// </summary>
-public interface ISchedulerTcpClient
+public interface ISchedulerClient
 {
     /// <summary>
     /// Instance of a <c>TcpClient</c> class for tcp communication.
@@ -26,8 +27,14 @@ public interface ISchedulerTcpClient
     /// </summary>
     LogService LogService { get; set; }
 
-    void Connect(string message, int port);
-    
+    /// <summary>
+    /// Creates a socket connection to address and port given by parameters.
+    /// </summary>
+    /// <param name="message"></param>
+    /// <param name="port"></param>
+    /// <returns></returns>
+    ClientStatus Connect(string message, int port);
+
     bool IsConnected();
 
     void Disconnect();
