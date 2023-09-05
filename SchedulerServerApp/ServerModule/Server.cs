@@ -112,7 +112,7 @@ public class Server : IServer
                     new MessageFromClient(client, message));
             }
         }
-        catch (Exception e)
+        catch (Exception)
         {
             if (client is null)
             {
@@ -120,10 +120,9 @@ public class Server : IServer
             }
             else
             {
-                Console.Write($"Client {GetClientIP(client)} left the server. " +
-                    $"(Unable to read data) ");
-                Console.WriteLine($"Exception while reading client " +
-                    $"{GetClientIP(client)} message: {e.Message}");
+                Console.WriteLine($"Client {GetClientIP(client)} left the server.");
+                //Console.WriteLine($"Exception while reading client " +
+                //    $"{GetClientIP(client)} message: {e.Message}");
                 DisconnectClient(client);
                 ListenForNewClients();
             }
@@ -207,6 +206,8 @@ public class Server : IServer
 
     public void TestSendTask()
     {
+        Console.WriteLine("Sending testing task to the last connected client.");
+
         TcpClient? client = ConnectedClients.LastOrDefault();
 
         if (client is null)
@@ -224,6 +225,7 @@ public class Server : IServer
 
     public void TestDisconnect()
     {
+        Console.WriteLine("Disconnecting last connected client.");
         TcpClient? client = ConnectedClients.LastOrDefault();
         
         if (client is null)

@@ -1,8 +1,8 @@
 ﻿using SharedResources.Messages;
 using System.Collections.Generic;
 using System.Net.Sockets;
-using SchedulerClientApp.Services;
 using SharedResources.Enums;
+using SchedulerClientApp.Services;
 
 namespace SchedulerClientApp.ClientModule;
 

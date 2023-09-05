@@ -21,7 +21,7 @@ public class LogService : ILogService
         {
             System.DateTime currentDateTime = System.DateTime.Now;
             string formattedDate = currentDateTime.ToString("MM/dd/yyyy HH:mm:ss");
-            message = (formattedDate + " > " + message);
+            message = formattedDate + " > " + message;
         }
         mainViewModel.ReceivedMessages += message;
 

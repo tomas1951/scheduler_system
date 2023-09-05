@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using SchedulerClientApp.Services;
-using SchedulerClientApp.ViewModels;
 using SharedResources.Enums;
 using SharedResources.Messages;
 using System;
@@ -11,19 +10,22 @@ using System.Threading;
 
 namespace SchedulerClientApp.ClientModule;
 
+/// <summary>
+/// Scheduler client class of a scheduler system.
+/// </summary>
 public class SchedulerClient : ISchedulerClient
 {
+    // Class properties
+    public LogService LogService { get; set; }
     public TcpClient TcpClient { get; set; }
     public List<BaseMessage> MessageQueue { get; set; }
-    public LogService LogService { get; set; }
-    //public ClientStatusEnum Status = ClientStatusEnum.Disconnected;
 
-    // Log macro
+    // Macro for simpler way of logging messages
     public delegate void MacroDelegate(string message, bool endl = true,
         bool date = true);
     private readonly MacroDelegate Log;
 
-    // For serializing json messages
+    // Settings for serializing/deserialising json messages
     private static JsonSerializerSettings JsonSettings = new JsonSerializerSettings
     {
         TypeNameHandling = TypeNameHandling.Auto
@@ -37,38 +39,10 @@ public class SchedulerClient : ISchedulerClient
         Log = LogService.Log;
     }
 
-    //private void ConnectToServer()
-    //{
-    //    Log("Connecting to a server...");
-    //    try
-    //    {
-    //        Client.Connect("127.0.0.1", 1234);
-    //    }
-    //    catch (SocketException)
-    //    {
-    //        Log("Server is offline");
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        Log($"Exception: {ex.GetType().Name} - {ex.Message}");
-    //    }
-
-    //    if (Client is not null && Client.IsConnected())
-    //    {
-    //        Log("Connection successful");
-    //        ClientStatus = ClientStatus.Connected;
-    //        OnStatusTimer(null);
-    //    }
-    //    else
-    //    {
-    //        Log("Connection failed");
-    //        ClientStatus = ClientStatus.Disconnected;
-    //    }
-    //}
-
+    // Creates a socket to the server side using function parameters.
     public ClientStatus Connect(string address, int port)
     {
-        
+        TcpClient = new TcpClient();
         bool exceptionCaught = false;
 
         try
@@ -106,56 +80,51 @@ public class SchedulerClient : ISchedulerClient
         return ClientStatus.Disconnected;
     }
 
+    // Checks whether client is connected to the server.
     public bool IsConnected()
     {
-        Socket sock = TcpClient.Client;
-        bool blockingState = sock.Blocking;
+        if (!TcpClient.Connected)
+        {
+            return false;
+        }
+
         try
         {
-            byte [] tmp = new byte[1];
-
-            sock.Blocking = false;
-            sock.Send(tmp, 0, 0);
+            TcpClient.Client.Send(new byte[1], 0, 0);
             return true;
         }
-        catch (SocketException e) 
+        catch (SocketException)
         {
-            // 10035 == WSAEWOULDBLOCK
-            if (e.NativeErrorCode.Equals(10035))
-                return true;
-            else
-            {
-                return false;
-            }
-        }
-        finally
-        {
-            sock.Blocking = blockingState;
+            return false;
         }
     }
 
+    // Checks and returns connection status.
     public ClientStatus GetConnectionStatus()
     {
         return IsConnected() ? ClientStatus.Connected : ClientStatus.Disconnected;
     }
 
+    // Closes the connection with the server.
     public void Disconnect()
     {
-        //Status = ClientStatusEnum.Disconnected;
         TcpClient.GetStream().Close();
         TcpClient.Close();
     }
 
+    // Adds a message to the MessageQueue to be sent.
     public void SendMessage(BaseMessage message)
     {
         MessageQueue.Add(message);
     }
 
+    // Sends a message to the server if there is some message waiting in MessageQueue.
+    // This method runs in its own thread.
     public void SendingMethod()
     {
         while (IsConnected())
         {
-            if (MessageQueue.Count > 0 && TcpClient is not null)
+            if (MessageQueue.Count > 0)
             {
                 NetworkStream stream = TcpClient.GetStream();
                 StreamWriter writer = new StreamWriter(stream);
@@ -167,18 +136,19 @@ public class SchedulerClient : ISchedulerClient
                 {
                     writer.WriteLine(str);
                     writer.Flush();
+                    MessageQueue.Remove(message);
                 }
-                catch
+                catch (Exception)
                 {
                     Disconnect();
-                    //Status = ClientStatusEnum.Disconnected;
                 }
-                MessageQueue.Remove(message);
             }
-            Thread.Sleep(30);
+            Thread.Sleep(1000);
         }
     }
 
+    // Listens for a incomming messages.
+    // This method runs in its own thread.
     public void ReceivingMethod()
     {
         while (IsConnected())
@@ -206,41 +176,38 @@ public class SchedulerClient : ISchedulerClient
                     else
                     {
                         // NOTE - repair that client in this
-                        PrintMessage(TcpClient, json_msg); 
+                        PrintMessage(TcpClient, json_msg);
                         // scenary is a server
                     }
                 }
                 catch (Exception ex)
                 {
                     LogService.Log(ex.Message);
-                    TcpClient.Close();
-                    //Status = ClientStatusEnum.Disconnected;
+                    Disconnect();
                 }
             }
+            Thread.Sleep(1000);
         }
     }
 
-    private static void PrintMessage(TcpClient client, StatusMessage message)
+    // Prints incomming Status message into log.
+    private void PrintMessage(TcpClient client, StatusMessage message)
     {
-        Console.WriteLine(string.Format("Host: {0}, Type: Status, Content: {1}",
-            GetClientIP(client), message.CurrentStatus));
+        Log($"Host: {GetClientIP(client)}, Type: Status, Content: " +
+            $"{message.CurrentStatus}");
     }
 
-    private static void PrintMessage(TcpClient client, BaseMessage message)
+    // Prints incomming Base message into log.
+    private void PrintMessage(TcpClient client, BaseMessage message)
     {
-        Console.WriteLine($"Host: {GetClientIP(client)}, Type: Base, Content: Empty");
+        Log($"Host: {GetClientIP(client)}, Type: Base, Content: Empty");
     }
 
+    // Returns client ip address for given client class argument.
+    // If client is null, function returns empty string.
     private static string GetClientIP(TcpClient client)
     {
         string? name = client.Client.RemoteEndPoint?.ToString();
-        if (name is not null)
-        {
-            return name;
-        }
-        else
-        {
-            return "";
-        }
+        return (name is not null) ? name : "";
     }
 }

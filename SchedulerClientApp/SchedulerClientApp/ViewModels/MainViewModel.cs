@@ -41,18 +41,22 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string _ReceivedMessages = string.Empty;
 
+    // Local changeable copies of the ui labels
+
+
     // Button handlers
     public ICommand? MoreDetailsButtonCommand { get; set; }
     public ICommand? ReconnectButtonCommand { get; set; }
 
-    // Log macro
+    // Macro for simpler way of logging messages
     public delegate void MacroDelegate(string message, bool endl = true,
         bool date = true);
     private readonly MacroDelegate Log;
 
     // Time of timers in milliseconds
     private const int ReconnectingTimerInterval = 5000;
-    private const int StatusTimerInterval = 5000;
+    private const int StatusTimerInterval = 10000;
+    private const int UILabelsSyncTimerInterval = 1000;
 
     // Server info
     private const string ServerIP = "127.0.0.1";
@@ -60,11 +64,11 @@ public partial class MainViewModel : ObservableObject
 
     // Tcp connection properties
     private SchedulerClient Client { get; set; }
-    //private ComputationalTask? CurrentTask;
     private LogService LogService;
     private Timer? ReconnectingTimer;
     private Timer? StatusTimer;
-    
+    private Timer? UILabelsSyncTimer;
+
     public MainViewModel()
     {
         // Start up log service
@@ -77,28 +81,43 @@ public partial class MainViewModel : ObservableObject
         currentDomain.UnhandledException += 
             new UnhandledExceptionEventHandler(CatchUnhandledExceptions);
 
-        // Create Scheduler TCP Client for communication
+        // Start the Scheduler Client
+        Log($"Connecting to a server {ServerIP}:{Port} ...");
         Client = new SchedulerClient(LogService);
 
+        // Set up handlers and timers
         InitializeHandlers();
         SetReconnectingTimer();
         SetStatusTimer();
+        //SetUILabelsSyncTimer();
+    }
 
-        // Connect to the server
-        Log($"Connecting to a server {ServerIP}:{Port} ...");
-        ClientStatus = Client.Connect(ServerIP, Port);
+    /***
+    UI labels sync (test)
+    ***/
+    public void SetUILabelsSyncTimer()
+    {
+        UILabelsSyncTimer = new Timer(UILabelsSyncTimerInterval);
+        UILabelsSyncTimer.Elapsed += new ElapsedEventHandler(OnUILabelsSyncTimer2);
+        UILabelsSyncTimer.AutoReset = true;
+        UILabelsSyncTimer.Enabled = true;
+    }
+
+    // This is sync method for updating UI labels
+    public void OnUILabelsSyncTimer2(object? source, ElapsedEventArgs? e = null)
+    {
+
     }
 
     /***
     Handler functions
     ***/
-
     public void InitializeHandlers()
     {
         // More Detains Button Handler
-        MoreDetailsButtonCommand = ReactiveCommand.Create(MoreDetailsButtonFunction);
+        MoreDetailsButtonCommand = ReactiveCommand.Create(OnMoreDetailsButtonPressed);
         // Reconnect Button Handler
-        ReconnectButtonCommand = ReactiveCommand.Create(ReconnectButtonFunction);
+        ReconnectButtonCommand = ReactiveCommand.Create(OnReconnectButtonPressed);
     }
 
     /***
@@ -141,7 +160,6 @@ public partial class MainViewModel : ObservableObject
     /***
     Reconnecting Timer functions
     ***/
-
     private void SetReconnectingTimer()
     {
         ReconnectingTimer = new Timer(ReconnectingTimerInterval);
@@ -165,11 +183,8 @@ public partial class MainViewModel : ObservableObject
     BUTTON FUNCTIONS
     ***/
 
-    /// <summary>
-    /// More Details button function.
-    /// </summary>
-    /// <returns></returns>
-    private async Task MoreDetailsButtonFunction()
+    // More Details button pressed function.
+    private async Task OnMoreDetailsButtonPressed()
     {
         if (!Client.IsConnected())
         {
@@ -193,35 +208,28 @@ public partial class MainViewModel : ObservableObject
         });
     }
 
-    /// <summary>
-    /// Reconnect button function.
-    /// </summary>
-    /// <returns></returns>
-    private async Task ReconnectButtonFunction()
+    // Reconnect button pressed function.
+    private async Task OnReconnectButtonPressed()
     {
         if (Client.IsConnected())
         {
             await Task.Run(() =>
             {
-                Client?.Disconnect();
+                Client.Disconnect();
             });
         }
         Log("Disconnected");
     }
 
-    /// <summary>
-    /// Exceptions catcher helper function.
-    /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="args"></param>
+    // Exceptions catcher helper function.
     void CatchUnhandledExceptions(object sender, 
     UnhandledExceptionEventArgs args)
     {
         Exception e = (Exception) args.ExceptionObject;
         Log($"MyHandler caught : {e.Message}");
         Log($"Runtime terminating: {args.IsTerminating}");
-        Client = new SchedulerClient(LogService);
 
-        //ClientStatus = Client.Connect(ServerIP, Port);
+        // Note - try throwing testing exception to see how to keep the app running
+        Client = new SchedulerClient(LogService);
     }
 }
