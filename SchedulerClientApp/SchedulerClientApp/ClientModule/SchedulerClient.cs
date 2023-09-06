@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using SchedulerClientApp.Services;
+using SchedulerClientApp.TaskManager;
 using SharedResources.Enums;
 using SharedResources.Messages;
 using System;
@@ -7,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace SchedulerClientApp.ClientModule;
 
@@ -19,6 +21,7 @@ public class SchedulerClient : ISchedulerClient
     public LogService LogService { get; set; }
     public TcpClient TcpClient { get; set; }
     public List<BaseMessage> MessageQueue { get; set; }
+    public SchedulerTask? CurrentTask { get; set; }
 
     // Macro for simpler way of logging messages
     public delegate void MacroDelegate(string message, bool endl = true,
@@ -171,7 +174,11 @@ public class SchedulerClient : ISchedulerClient
                     }
                     else if (json_msg is StatusMessage)
                     {
-                        PrintMessage(TcpClient, (StatusMessage)json_msg); // DETTO
+                        PrintMessage(TcpClient, (StatusMessage)json_msg);
+                    }
+                    else if (json_msg is TaskMessage)
+                    {
+                        PrintMessage(TcpClient, (TaskMessage)json_msg);
                     }
                     else
                     {
@@ -190,24 +197,66 @@ public class SchedulerClient : ISchedulerClient
         }
     }
 
-    // Prints incomming Status message into log.
-    private void PrintMessage(TcpClient client, StatusMessage message)
+    // Sends status message to the server.
+    // NOTE: Add task status to the message and later more information about the client.
+    public async void SendStatusMessage()
     {
-        Log($"Host: {GetClientIP(client)}, Type: Status, Content: " +
+        await Task.Run(() =>
+        {
+            try
+            {
+                ClientStatus currentStatus = GetConnectionStatus();
+                StatusMessage message = new StatusMessage(currentStatus.ToString());
+                Log($"Sending status message. Status: {currentStatus}");
+                SendMessage(message);
+            }
+            catch (Exception ex)
+            {
+                Log($"Exception: {ex.Message} {ex.GetType()}");
+            }
+        });
+    }
+
+    // Prints incomming Status message into log.
+    public void PrintMessage(TcpClient client, StatusMessage message)
+    {
+        Log($"Host: {GetClientIP(client)}, Type: StatusMessage, Content: " +
             $"{message.CurrentStatus}");
     }
 
     // Prints incomming Base message into log.
-    private void PrintMessage(TcpClient client, BaseMessage message)
+    public void PrintMessage(TcpClient client, BaseMessage message)
     {
-        Log($"Host: {GetClientIP(client)}, Type: Base, Content: Empty");
+        Log($"Host: {GetClientIP(client)}, Type: BaseMessage, Content: Empty");
+    }
+
+    // Prints incomming Task message into log.
+    public void PrintMessage(TcpClient client, TaskMessage message)
+    {
+        Log($"Host: {GetClientIP(client)}, Type: TaskMessage, Content: " +
+            $"{message.ExeFilePath}");
     }
 
     // Returns client ip address for given client class argument.
     // If client is null, function returns empty string.
-    private static string GetClientIP(TcpClient client)
+    public string GetClientIP(TcpClient client)
     {
         string? name = client.Client.RemoteEndPoint?.ToString();
         return (name is not null) ? name : "";
+    }
+
+    // Testing function
+    public void TestSendBaseMessage()
+    {
+        try
+        {
+            BaseMessage message = new BaseMessage();
+            Log("Sending base message");
+            SendMessage(message);
+        }
+        catch (Exception ex)
+        {
+            Log($"Exception: {ex.Message} {ex.GetType()}");
+        }
     }
 }

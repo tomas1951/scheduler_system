@@ -8,8 +8,8 @@ namespace SchedulerServerApp;
 internal class Program
 {
     private static event EventHandler<string>? ReceivedCommandHandler;
-    private const int PortNo = 1234;
-    public static Server Server { get; set; } = new Server(PortNo);
+    private const int PortNO = 1234;
+    public static Server Server { get; set; } = new Server(PortNO);
 
     static void Main(string[] args)
     {
@@ -22,10 +22,6 @@ internal class Program
         ReceivedCommandHandler += OnReceivedCommand;
         Thread commandsThead = new Thread(ReadConsoleCommands);
         commandsThead.Start();
-
-        // Start the scheduler
-        //Scheduler scheduler = new Scheduler();
-        //scheduler.Start();
     }
 
     private static void ReadConsoleCommands()
@@ -34,6 +30,7 @@ internal class Program
 
         while (true)
         {
+            Console.WriteLine("ReadConsoleCommand Tag.");
             string? command = Console.ReadLine();
             // Raise the command received event
             ReceivedCommandHandler?.Invoke(null, command ?? "");
@@ -54,6 +51,12 @@ internal class Program
                 break;
             case "test disconnect":
                 Server.TestDisconnect();
+                break;
+            case "offline":
+                // TODO
+                break;
+            case "online":
+                // TODO
                 break;
             default:
                 Console.WriteLine("This command does not exist. Get some help.");

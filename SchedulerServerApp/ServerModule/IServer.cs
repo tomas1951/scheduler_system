@@ -35,11 +35,11 @@ public interface IServer
     /// <summary>
     /// Property defining a timer that listens for new clients.
     /// </summary>
-    System.Timers.Timer ListeningTimer { get; set; }
+    System.Timers.Timer ListenForClientsTimer { get; set; }
 
     //void Start();
 
-    void IsOnline();
+    //void IsOnline();
 
     void OnListeningTimer(object? source, ElapsedEventArgs e);
 

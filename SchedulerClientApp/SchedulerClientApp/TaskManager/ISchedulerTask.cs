@@ -1,5 +1,5 @@
 ﻿namespace SchedulerClientApp.TaskManager;
 
-public interface IComputationalTask
+public interface ISchedulerTask
 {
 }

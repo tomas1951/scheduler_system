@@ -54,8 +54,8 @@ public partial class MainViewModel : ObservableObject
     private readonly MacroDelegate Log;
 
     // Time of timers in milliseconds
-    private const int ReconnectingTimerInterval = 5000;
-    private const int StatusTimerInterval = 10000;
+    private const int ReconnectingTimerInterval = 10000;
+    private const int StatusTimerInterval = 15000;
     private const int UILabelsSyncTimerInterval = 1000;
 
     // Server info
@@ -64,10 +64,10 @@ public partial class MainViewModel : ObservableObject
 
     // Tcp connection properties
     private SchedulerClient Client { get; set; }
-    private LogService LogService;
-    private Timer? ReconnectingTimer;
-    private Timer? StatusTimer;
-    private Timer? UILabelsSyncTimer;
+    private LogService LogService { get; set; }
+    private Timer? ReconnectingTimer { get; set; }
+    private Timer? StatusTimer { get; set; }
+    private Timer? UILabelsSyncTimer { get; set; }
 
     public MainViewModel()
     {
@@ -136,25 +136,8 @@ public partial class MainViewModel : ObservableObject
         ClientStatus = Client.GetConnectionStatus();
         if (ClientStatus == ClientStatus.Connected)
         {
-            SendStatusMessage();
+            Client.SendStatusMessage();
         }
-    }
-
-    private async void SendStatusMessage()
-    {
-        await Task.Run(() =>
-        {
-            try
-            {
-                StatusMessage message = new StatusMessage(ClientStatus.ToString());
-                Log($"Sending status message. Status: {ClientStatus}");
-                Client?.SendMessage(message);
-            }
-            catch (Exception ex)
-            {
-                Log($"Exception: {ex.Message} {ex.GetType()}");
-            }
-        });
     }
 
     /***
@@ -195,16 +178,7 @@ public partial class MainViewModel : ObservableObject
 
         await Task.Run(() =>
         {
-            try
-            {
-                BaseMessage message = new BaseMessage();
-                Log("Sending base message");
-                Client?.SendMessage(message);
-            }
-            catch (Exception ex)
-            {
-                Log($"Exception: {ex.Message} {ex.GetType()}");
-            }
+            Client.TestSendBaseMessage();
         });
     }
 

@@ -1,8 +1,8 @@
-﻿using System.Net.Sockets;
+﻿using Newtonsoft.Json;
+using SharedResources.Messages;
+using System.Net.Sockets;
 using System.Text;
 using System.Timers;
-using Newtonsoft.Json;
-using SharedResources.Messages;
 
 namespace SchedulerServerApp.ServerModule;
 
@@ -18,7 +18,8 @@ public class Server : IServer
         new ManualResetEvent(false);
 
     // Listening timer
-    public System.Timers.Timer ListeningTimer { get; set; }
+    public System.Timers.Timer ListenForClientsTimer { get; set; }
+    private const int ListenForClientsTimerInterval = 5000;
 
     // Handlers
     public delegate void MessageReceivedHandler(object? sender, MessageFromClient m);
@@ -40,26 +41,27 @@ public class Server : IServer
         Listener.Start();
         IsStarted = true;
 
-        ListeningTimer = new System.Timers.Timer(5000);
-        SetListeningTimer();
+        ListenForClientsTimer = new System.Timers.Timer(ListenForClientsTimerInterval);
+        SetListenForClientsTimer();
         ListenForNewClients();
 
         Console.WriteLine("Server is online.");
     }
 
-    public void IsOnline()
-    {
+    //public void IsOnline()
+    //{
 
+    //}
+
+    private void SetListenForClientsTimer()
+    {
+        ListenForClientsTimer.Elapsed += new ElapsedEventHandler(
+            OnListenForClientsTimer);
+        ListenForClientsTimer.AutoReset = true;
+        ListenForClientsTimer.Enabled = true;
     }
 
-    private void SetListeningTimer()
-    {
-        ListeningTimer.Elapsed += new ElapsedEventHandler(OnListeningTimer);
-        ListeningTimer.AutoReset = true;
-        ListeningTimer.Enabled = true;
-    }
-
-    public void OnListeningTimer(object? source, ElapsedEventArgs e)
+    public void OnListenForClientsTimer(object? source, ElapsedEventArgs e)
     {
         ListenForNewClients();
     }
@@ -75,6 +77,8 @@ public class Server : IServer
 
     public void Stop()
     {
+        // NOTE - would be nicer to rework this function to actively find out whether 
+        // connection is alive
         if (IsStarted)
         {
             Listener?.Stop();
@@ -171,6 +175,7 @@ public class Server : IServer
         }
         else
         {
+            // NOTE - Add name of a disconncting client here
             return "--name unknown--";
         }
     }
@@ -227,7 +232,7 @@ public class Server : IServer
     {
         Console.WriteLine("Disconnecting last connected client.");
         TcpClient? client = ConnectedClients.LastOrDefault();
-        
+
         if (client is null)
         {
             Console.WriteLine("No connected clients.");
