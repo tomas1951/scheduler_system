@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using SchedulerClientApp.Services;
 using SchedulerClientApp.TaskManager;
+using SchedulerClientApp.ViewModels;
 using SharedResources.Enums;
 using SharedResources.Messages;
 using System;
@@ -43,7 +44,7 @@ public class SchedulerClient : ISchedulerClient
     }
 
     // Creates a socket to the server side using function parameters.
-    public ClientStatus Connect(string address, int port)
+    public void Connect(string address, int port, StatusParameters status)
     {
         TcpClient = new TcpClient();
         bool exceptionCaught = false;
@@ -54,11 +55,13 @@ public class SchedulerClient : ISchedulerClient
         }
         catch (SocketException)
         {
-            Log($"Server is offline.");
+            //Log($"Server is offline.");
+            status.ServerConnection = "Server is offline";
             exceptionCaught = true;
         }
         catch (Exception ex)
         {
+            status.ServerConnection = "Server connecting error";
             Log($"Exception: {ex.GetType().Name} - {ex.Message}");
             exceptionCaught = true;
         }
@@ -77,10 +80,13 @@ public class SchedulerClient : ISchedulerClient
             sendingThread.Start();
 
             Log("Connection successful");
-            return ClientStatus.Connected;
+            status.ServerConnection = "server is online";
+            status.ClientStatus = ClientStatus.Connected;
         }
-
-        return ClientStatus.Disconnected;
+        else
+        {
+            status.ClientStatus = ClientStatus.Disconnected;
+        }
     }
 
     // Checks whether client is connected to the server.

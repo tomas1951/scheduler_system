@@ -23,7 +23,6 @@ public class LogService : ILogService
             string formattedDate = currentDateTime.ToString("MM/dd/yyyy HH:mm:ss");
             message = formattedDate + " > " + message;
         }
-        mainViewModel.ReceivedMessages += message;
-
+        mainViewModel.ClientLogList += message;
     }
 }

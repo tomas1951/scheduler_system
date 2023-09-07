@@ -41,7 +41,7 @@ public interface IServer
 
     //void IsOnline();
 
-    void OnListeningTimer(object? source, ElapsedEventArgs e);
+    void OnListenForClientsTimer(object? source, ElapsedEventArgs e);
 
     void ListenForNewClients();
 

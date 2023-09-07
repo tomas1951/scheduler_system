@@ -23,26 +23,36 @@ public partial class MainViewModel : ObservableObject
     // Note: Capital letters properties are auto-generated and using non-capital
     // variables in code will lead to errors.
     [ObservableProperty]
-    private string serverConnection = "deprecated";
+    private string serverConnectionLabel = "";
     [ObservableProperty]
-    private ClientStatus clientStatus = ClientStatus.Disconnected;
+    private ClientStatus clientStatusLabel = ClientStatus.Disconnected;
     [ObservableProperty]
-    private bool taskAssigned = false;
+    private string taskAssignedLabel = "";
     [ObservableProperty]
-    private string taskStatus = "no assigned task";
+    private string taskStatusLabel = "";
     [ObservableProperty]
-    private string operatingSystem = "not recognised";
+    private string operatingSystemLabel = "";
     [ObservableProperty]
-    private string cluster = "not recognised";
+    private string clusterLabel = "";
     [ObservableProperty]
-    private string clientName = "not recognised";
+    private string clientNameLabel = "";
     [ObservableProperty]
-    private string clientIP = "not recognised";
+    private string clientIPLabel = "";
     [ObservableProperty]
-    private string _ReceivedMessages = string.Empty;
+    private string clientLogList = string.Empty;
 
-    // Local changeable copies of the ui labels
-
+    // Class holding local changeable copies of the ui labels
+    public StatusParameters Status { get; set; } = new StatusParameters
+    {
+        ServerConnection = "offline",
+        ClientStatus = ClientStatus.Disconnected,
+        TaskAssigned = "no assigned task",
+        TaskStatus = "no assigned task",
+        OperatingSystem = "not recognised",
+        Cluster = "note recognised",
+        ClientName = "not recognised",
+        ClientIP = "not recognised"
+    };
 
     // Button handlers
     public ICommand? MoreDetailsButtonCommand { get; set; }
@@ -87,28 +97,12 @@ public partial class MainViewModel : ObservableObject
 
         // Set up handlers and timers
         InitializeHandlers();
+        SetUILabelsSyncTimer();
         SetReconnectingTimer();
         SetStatusTimer();
-        //SetUILabelsSyncTimer();
+        // TODO: load client info
     }
-
-    /***
-    UI labels sync (test)
-    ***/
-    public void SetUILabelsSyncTimer()
-    {
-        UILabelsSyncTimer = new Timer(UILabelsSyncTimerInterval);
-        UILabelsSyncTimer.Elapsed += new ElapsedEventHandler(OnUILabelsSyncTimer2);
-        UILabelsSyncTimer.AutoReset = true;
-        UILabelsSyncTimer.Enabled = true;
-    }
-
-    // This is sync method for updating UI labels
-    public void OnUILabelsSyncTimer2(object? source, ElapsedEventArgs? e = null)
-    {
-
-    }
-
+    
     /***
     Handler functions
     ***/
@@ -121,25 +115,27 @@ public partial class MainViewModel : ObservableObject
     }
 
     /***
-    Status Timer functions
+    UI labels sync (test)
     ***/
-    private void SetStatusTimer()
+    public void SetUILabelsSyncTimer()
     {
-        StatusTimer = new Timer(StatusTimerInterval);
-        StatusTimer.Elapsed += new ElapsedEventHandler(OnStatusTimer);
-        StatusTimer.AutoReset = true;
-        StatusTimer.Enabled = true;
+        UILabelsSyncTimer = new Timer(UILabelsSyncTimerInterval);
+        UILabelsSyncTimer.Elapsed += new ElapsedEventHandler(OnUILabelsSyncTimer2);
+        UILabelsSyncTimer.Start();
     }
 
-    private void OnStatusTimer(object? source, ElapsedEventArgs? e = null)
+    // This is sync method for updating UI labels
+    public void OnUILabelsSyncTimer2(object? source, ElapsedEventArgs? e = null)
     {
-        ClientStatus = Client.GetConnectionStatus();
-        if (ClientStatus == ClientStatus.Connected)
-        {
-            Client.SendStatusMessage();
-        }
+        ServerConnectionLabel = Status.ServerConnection;
+        ClientStatusLabel = Status.ClientStatus;
+        TaskAssignedLabel = Status.TaskAssigned;
+        TaskStatusLabel = Status.TaskStatus;
+        OperatingSystemLabel = Status.OperatingSystem;
+        ClusterLabel = Status.Cluster;
+        ClientIPLabel = Status.ClientIP;
     }
-
+    
     /***
     Reconnecting Timer functions
     ***/
@@ -147,32 +143,49 @@ public partial class MainViewModel : ObservableObject
     {
         ReconnectingTimer = new Timer(ReconnectingTimerInterval);
         ReconnectingTimer.Elapsed += new ElapsedEventHandler(OnReconnectingTimer);
-        ReconnectingTimer.AutoReset = true;
-        ReconnectingTimer.Enabled = true;
+        ReconnectingTimer.Start();
+        OnReconnectingTimer(this, null);
     }
 
-    private void OnReconnectingTimer(object? source, ElapsedEventArgs e)
+    private void OnReconnectingTimer(object? source, ElapsedEventArgs? e)
     {
-        ClientStatus = Client.GetConnectionStatus();
-        if (ClientStatus == ClientStatus.Disconnected)
+        Status.ClientStatus = Client.GetConnectionStatus();
+        if (Status.ClientStatus == ClientStatus.Disconnected)
         {
-            ClientStatus = ClientStatus.Reconnecting;
-            Log("Auto-reconnecting... ");
-            ClientStatus = Client.Connect(ServerIP, Port);
+            Status.ClientStatus = ClientStatus.Reconnecting;
+            Client.Connect(ServerIP, Port, Status);
+        }
+    }
+
+    /***
+    Status Timer functions
+    ***/
+    private void SetStatusTimer()
+    {
+        StatusTimer = new Timer(StatusTimerInterval);
+        StatusTimer.Elapsed += new ElapsedEventHandler(OnStatusTimer);
+        StatusTimer.Start();
+    }
+
+    private void OnStatusTimer(object? source, ElapsedEventArgs? e = null)
+    {
+        Status.ClientStatus = Client.GetConnectionStatus();
+        if (Status.ClientStatus == ClientStatus.Connected)
+        {
+            Client.SendStatusMessage();
         }
     }
 
     /***
     BUTTON FUNCTIONS
     ***/
-
     // More Details button pressed function.
     private async Task OnMoreDetailsButtonPressed()
     {
         if (!Client.IsConnected())
         {
             Log("Server is offline");
-            ClientStatus = ClientStatus.Disconnected;
+            Status.ClientStatus = ClientStatus.Disconnected;
             return;
         }
 

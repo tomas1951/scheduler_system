@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using SharedResources.Enums;
 using SchedulerClientApp.Services;
 using SchedulerClientApp.TaskManager;
+using SchedulerClientApp.ViewModels;
 
 namespace SchedulerClientApp.ClientModule;
 
@@ -38,8 +39,9 @@ public interface ISchedulerClient
     /// </summary>
     /// <param name="message"></param>
     /// <param name="port"></param>
+    /// <param name="autoReconnect"></param>
     /// <returns></returns>
-    ClientStatus Connect(string message, int port);
+    void Connect(string message, int port, StatusParameters status);
 
     /// <summary>
     /// Returns true, if connection with the server is active. Returns false otherwise.

@@ -30,7 +30,6 @@ internal class Program
 
         while (true)
         {
-            Console.WriteLine("ReadConsoleCommand Tag.");
             string? command = Console.ReadLine();
             // Raise the command received event
             ReceivedCommandHandler?.Invoke(null, command ?? "");

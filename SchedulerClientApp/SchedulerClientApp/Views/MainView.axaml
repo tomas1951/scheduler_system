@@ -49,14 +49,14 @@
         ColumnDefinitions="*, *"
         RowDefinitions="*, *, *, *">
         <Label Grid.Row="0" Grid.Column="0"> Server connection:</Label>
-        <Label Content="{Binding ServerConnection}" Foreground="Green"
+        <Label Content="{Binding ServerConnectionLabel}" Foreground="Green"
                Grid.Row="0" Grid.Column="1" />
         <Label Grid.Row="1" Grid.Column="0"> Client status: </Label>
-        <Label Content="{Binding ClientStatus}" Grid.Row="1" Grid.Column="1" />
+        <Label Content="{Binding ClientStatusLabel}" Grid.Row="1" Grid.Column="1" />
         <Label Grid.Row="2" Grid.Column="0"> Task assigned: </Label>
-        <Label Content="{Binding TaskAssigned}" Grid.Row="2" Grid.Column="1" />
+        <Label Content="{Binding TaskAssignedLabel}" Grid.Row="2" Grid.Column="1" />
         <Label Grid.Row="3" Grid.Column="0"> Task status: </Label>
-        <Label Content="{Binding TaskStatus}" Grid.Row="3" Grid.Column="1" />
+        <Label Content="{Binding TaskStatusLabel}" Grid.Row="3" Grid.Column="1" />
       </Grid>
 
       <!-- Status panel - client machine information -->
@@ -65,9 +65,9 @@
         ColumnDefinitions="*, *"
         RowDefinitions="*, *, *, *">
         <Label Grid.Row="0" Grid.Column="0"> Operating system: </Label>
-        <Label Content="{Binding OperatingSystem}" Grid.Row="0" Grid.Column="1" />
+        <Label Content="{Binding OperatingSystemLabel}" Grid.Row="0" Grid.Column="1" />
         <Label Grid.Row="1" Grid.Column="0"> Cluster: </Label>
-        <Label Content="{Binding Cluster}" Grid.Row="1" Grid.Column="1" />
+        <Label Content="{Binding ClusterLabel}" Grid.Row="1" Grid.Column="1" />
         <!-- empty label space -->
         <Label Grid.Row="2" Grid.Column="0"> </Label>
         <Label Grid.Row="2" Grid.Column="1"> </Label>
@@ -95,7 +95,7 @@
           Name="logTextBlock"
           VerticalAlignment="Top"
           TextWrapping="Wrap"
-          Text="{Binding ReceivedMessages}">
+          Text="{Binding ClientLogList}">
         </TextBlock>
       </ScrollViewer>
     </Border>
@@ -112,9 +112,9 @@
         Width="400"
         Margin="10, 0, 0, 0">
         <Label Grid.Row="0" Grid.Column="0"> Client name: </Label>
-        <Label Content="{Binding ClientName}" Grid.Row="0" Grid.Column="1" />
+        <Label Content="{Binding ClientNameLabel}" Grid.Row="0" Grid.Column="1" />
         <Label Grid.Row="1" Grid.Column="0"> Client IP: </Label>
-        <Label Content="{Binding ClientIP}" Grid.Row="1" Grid.Column="1" />
+        <Label Content="{Binding ClientIPLabel}" Grid.Row="1" Grid.Column="1" />
       </Grid>
 
       <!-- empty space -->
