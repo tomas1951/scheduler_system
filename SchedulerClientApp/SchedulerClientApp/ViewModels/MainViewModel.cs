@@ -2,14 +2,15 @@
 using ReactiveUI;
 using SchedulerClientApp.ClientModule;
 using SchedulerClientApp.Services;
-using SchedulerClientApp.TaskManager;
 using SharedResources.Enums;
-using SharedResources.Messages;
 using System;
-using System.Net.Sockets;
+using System.IO;
+using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Input;
+using Timer = System.Timers.Timer;
 
 namespace SchedulerClientApp.ViewModels;
 
@@ -46,12 +47,12 @@ public partial class MainViewModel : ObservableObject
     {
         ServerConnection = "offline",
         ClientStatus = ClientStatus.Disconnected,
-        TaskAssigned = "no assigned task",
-        TaskStatus = "no assigned task",
-        OperatingSystem = "not recognised",
-        Cluster = "note recognised",
-        ClientName = "not recognised",
-        ClientIP = "not recognised"
+        TaskAssigned = "[no assigned task]",
+        TaskStatus = "[no assigned task]",
+        OperatingSystem = "[not recognised]",
+        Cluster = "[note recognised]",
+        ClientName = "[not recognised]",
+        ClientIP = "[not recognised]"
     };
 
     // Button handlers
@@ -64,20 +65,27 @@ public partial class MainViewModel : ObservableObject
     private readonly MacroDelegate Log;
 
     // Time of timers in milliseconds
-    private const int ReconnectingTimerInterval = 10000;
+    private const int ReconnectingTimerInterval = 15000;
     private const int StatusTimerInterval = 15000;
     private const int UILabelsSyncTimerInterval = 1000;
 
     // Server info
-    private const string ServerIP = "127.0.0.1";
-    private const int Port = 1234;
+    //private const string ServerIP = "127.0.0.1"; // local host
+    //private const string ServerIP = "172.20.1.45";
+    //private const int Port = 1234;
+    private string ServerIP { get; set; } = "";
+    private int Port { get; set; }
+
+    // Congig info
+    private const string ConfigPath = "C:\\Users\\Admin\\Desktop\\scheduler_system\\" +
+        "SchedulerClientApp\\client_config.txt";
 
     // Tcp connection properties
     private SchedulerClient Client { get; set; }
     private LogService LogService { get; set; }
-    private Timer? ReconnectingTimer { get; set; }
-    private Timer? StatusTimer { get; set; }
-    private Timer? UILabelsSyncTimer { get; set; }
+    private System.Timers.Timer? ReconnectingTimer { get; set; }
+    private System.Timers.Timer? StatusTimer { get; set; }
+    private System.Timers.Timer? UILabelsSyncTimer { get; set; }
 
     public MainViewModel()
     {
@@ -85,12 +93,12 @@ public partial class MainViewModel : ObservableObject
         LogService = new LogService(this);
         Log = LogService.Log;
         Log("SCHEDULER SYSTEM CLIENT APP started.");
-        
+
         // Catching unhandled exceptions
         AppDomain currentDomain = AppDomain.CurrentDomain;
-        currentDomain.UnhandledException += 
+        currentDomain.UnhandledException +=
             new UnhandledExceptionEventHandler(CatchUnhandledExceptions);
-
+        
         // Start the Scheduler Client
         Log($"Connecting to a server {ServerIP}:{Port} ...");
         Client = new SchedulerClient(LogService);
@@ -100,9 +108,8 @@ public partial class MainViewModel : ObservableObject
         SetUILabelsSyncTimer();
         SetReconnectingTimer();
         SetStatusTimer();
-        // TODO: load client info
     }
-    
+
     /***
     Handler functions
     ***/
@@ -135,7 +142,7 @@ public partial class MainViewModel : ObservableObject
         ClusterLabel = Status.Cluster;
         ClientIPLabel = Status.ClientIP;
     }
-    
+
     /***
     Reconnecting Timer functions
     ***/
@@ -150,6 +157,12 @@ public partial class MainViewModel : ObservableObject
     private void OnReconnectingTimer(object? source, ElapsedEventArgs? e)
     {
         Status.ClientStatus = Client.GetConnectionStatus();
+
+        if (ServerIP == "" && !LoadClientConfig())
+        {
+            return;
+        }
+
         if (Status.ClientStatus == ClientStatus.Disconnected)
         {
             Status.ClientStatus = ClientStatus.Reconnecting;
@@ -184,7 +197,7 @@ public partial class MainViewModel : ObservableObject
     {
         if (!Client.IsConnected())
         {
-            Log("Server is offline");
+            Log("server is offline");
             Status.ClientStatus = ClientStatus.Disconnected;
             return;
         }
@@ -209,14 +222,92 @@ public partial class MainViewModel : ObservableObject
     }
 
     // Exceptions catcher helper function.
-    void CatchUnhandledExceptions(object sender, 
+    void CatchUnhandledExceptions(object sender,
     UnhandledExceptionEventArgs args)
     {
-        Exception e = (Exception) args.ExceptionObject;
+        Exception e = (Exception)args.ExceptionObject;
         Log($"MyHandler caught : {e.Message}");
         Log($"Runtime terminating: {args.IsTerminating}");
 
         // Note - try throwing testing exception to see how to keep the app running
         Client = new SchedulerClient(LogService);
+    }
+
+
+    /***
+    Load Labels
+    ***/
+    // Loads a client parameters from the config file.
+    public bool LoadClientConfig()
+    {
+        if (!File.Exists(ConfigPath))
+        {
+            Log($"File {ConfigPath} doesn't exist or user doesnt have permission" +
+                $"to read the file.");
+            return false;
+        }
+
+        try
+        {
+            using (StreamReader sr = new StreamReader(ConfigPath))
+            {
+                string? line;
+
+                while ((line = sr.ReadLine()) != null)
+                {
+                    // Ignore lines starting with '#' or lines that are blank
+                    if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#"))
+                    {
+                        continue;
+                    }
+                    // Parse lines in "key = value" format
+                    string[] parts = line.Split(new[] { '=' }, 2);
+                    if (parts.Length != 2)
+                    {
+                        Log($"Config file error on line: {line}");
+                        return false;
+                    }
+                    string key = parts[0].Trim();
+                    string value = parts[1].Trim();
+
+                    Log($"Key: {key}, Value: {value}");
+
+                    switch (key)
+                    {
+                        case "ServerIP":
+                            ServerIP = value;
+                            break;
+                        case "Port":
+                            Port = int.Parse(value);
+                            break;
+                        case "OperatingSystem":
+                            Status.OperatingSystem = value;
+                            break;
+                        case "Cluster":
+                            Status.Cluster = value;
+                            break;
+                        case "ClientName":
+                            Status.ClientName = value;
+                            break;
+                        default:
+                            Log($"Config error: parameter {key} not recognised.");
+                            return false;
+                    }
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Log($"Config file exception: {e.Message}");
+            return false;
+        }
+        // IP address and port number validation check
+        if (!IPAddress.TryParse(ServerIP, out _) || !(Port > 0 && Port <= 65535))
+        {
+            Log($"Config error: ip address {ServerIP} or port number {Port} is" +
+                $" not valid.");
+            return false;
+        }
+        return true;
     }
 }

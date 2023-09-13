@@ -17,4 +17,9 @@
   <ItemGroup>
     <ProjectReference Include="..\SchedulerClientApp\SchedulerClientApp.csproj" />
   </ItemGroup>
+  
+  <!-- Enable cose style analysis on build. -->
+  <PropertyGroup>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
 </Project>

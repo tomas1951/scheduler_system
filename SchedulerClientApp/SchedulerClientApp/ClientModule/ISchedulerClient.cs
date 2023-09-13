@@ -1,10 +1,9 @@
-﻿using SharedResources.Messages;
-using System.Collections.Generic;
-using System.Net.Sockets;
-using SharedResources.Enums;
-using SchedulerClientApp.Services;
+﻿using SchedulerClientApp.Services;
 using SchedulerClientApp.TaskManager;
 using SchedulerClientApp.ViewModels;
+using SharedResources.Messages;
+using System.Collections.Generic;
+using System.Net.Sockets;
 
 namespace SchedulerClientApp.ClientModule;
 
