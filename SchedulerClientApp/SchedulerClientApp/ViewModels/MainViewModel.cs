@@ -6,7 +6,6 @@ using SharedResources.Enums;
 using System;
 using System.IO;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Input;
@@ -30,7 +29,7 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string taskAssignedLabel = "";
     [ObservableProperty]
-    private string taskStatusLabel = "";
+    private SchedulerTaskStatus taskStatusLabel = SchedulerTaskStatus.NoAssignedTask;
     [ObservableProperty]
     private string operatingSystemLabel = "";
     [ObservableProperty]
@@ -47,8 +46,8 @@ public partial class MainViewModel : ObservableObject
     {
         ServerConnection = "offline",
         ClientStatus = ClientStatus.Disconnected,
-        TaskAssigned = "[no assigned task]",
-        TaskStatus = "[no assigned task]",
+        TaskAssigned = "no",
+        TaskStatus = SchedulerTaskStatus.NoAssignedTask,
         OperatingSystem = "[not recognised]",
         Cluster = "[note recognised]",
         ClientName = "[not recognised]",
@@ -65,27 +64,23 @@ public partial class MainViewModel : ObservableObject
     private readonly MacroDelegate Log;
 
     // Time of timers in milliseconds
-    private const int ReconnectingTimerInterval = 15000;
-    private const int StatusTimerInterval = 15000;
-    private const int UILabelsSyncTimerInterval = 1000;
+    private const int ReconnectingTimerInterval = 15 * 1000;
+    private const int StatusTimerInterval = 30 * 1000;
+    private const int UILabelsSyncTimerInterval = 1 * 1000;
 
     // Server info
-    //private const string ServerIP = "127.0.0.1"; // local host
-    //private const string ServerIP = "172.20.1.45";
-    //private const int Port = 1234;
     private string ServerIP { get; set; } = "";
     private int Port { get; set; }
 
     // Congig info
-    private const string ConfigPath = "C:\\Users\\Admin\\Desktop\\scheduler_system\\" +
-        "SchedulerClientApp\\client_config.txt";
+    private const string ConfigPath = "client_config.ini";
 
     // Tcp connection properties
     private SchedulerClient Client { get; set; }
     private LogService LogService { get; set; }
-    private System.Timers.Timer? ReconnectingTimer { get; set; }
-    private System.Timers.Timer? StatusTimer { get; set; }
-    private System.Timers.Timer? UILabelsSyncTimer { get; set; }
+    private Timer? ReconnectingTimer { get; set; }
+    private Timer? StatusTimer { get; set; }
+    private Timer? UILabelsSyncTimer { get; set; }
 
     public MainViewModel()
     {
@@ -98,9 +93,9 @@ public partial class MainViewModel : ObservableObject
         AppDomain currentDomain = AppDomain.CurrentDomain;
         currentDomain.UnhandledException +=
             new UnhandledExceptionEventHandler(CatchUnhandledExceptions);
-        
+
         // Start the Scheduler Client
-        Log($"Connecting to a server {ServerIP}:{Port} ...");
+        Log($"Connecting to a server...");
         Client = new SchedulerClient(LogService);
 
         // Set up handlers and timers
@@ -127,19 +122,31 @@ public partial class MainViewModel : ObservableObject
     public void SetUILabelsSyncTimer()
     {
         UILabelsSyncTimer = new Timer(UILabelsSyncTimerInterval);
-        UILabelsSyncTimer.Elapsed += new ElapsedEventHandler(OnUILabelsSyncTimer2);
+        UILabelsSyncTimer.Elapsed += new ElapsedEventHandler(OnUILabelsSyncTimer);
         UILabelsSyncTimer.Start();
     }
 
     // This is sync method for updating UI labels
-    public void OnUILabelsSyncTimer2(object? source, ElapsedEventArgs? e = null)
+    public void OnUILabelsSyncTimer(object? source, ElapsedEventArgs? e = null)
     {
+        if (Client.CurrentTask is not null)
+        {
+            Status.TaskAssigned = "yes";
+            Status.TaskStatus = Client.CurrentTask.Status;
+        }
+        else
+        {
+            Status.TaskAssigned = "no";
+            Status.TaskStatus = SchedulerTaskStatus.NoAssignedTask;
+        }
+
         ServerConnectionLabel = Status.ServerConnection;
         ClientStatusLabel = Status.ClientStatus;
         TaskAssignedLabel = Status.TaskAssigned;
         TaskStatusLabel = Status.TaskStatus;
         OperatingSystemLabel = Status.OperatingSystem;
         ClusterLabel = Status.Cluster;
+        ClientNameLabel = Status.ClientName;
         ClientIPLabel = Status.ClientIP;
     }
 
@@ -242,8 +249,7 @@ public partial class MainViewModel : ObservableObject
     {
         if (!File.Exists(ConfigPath))
         {
-            Log($"File {ConfigPath} doesn't exist or user doesnt have permission" +
-                $"to read the file.");
+            Log($"Error in reading config file {ConfigPath}.");
             return false;
         }
 
@@ -256,7 +262,7 @@ public partial class MainViewModel : ObservableObject
                 while ((line = sr.ReadLine()) != null)
                 {
                     // Ignore lines starting with '#' or lines that are blank
-                    if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#"))
+                    if (string.IsNullOrWhiteSpace(line) || line.StartsWith(";"))
                     {
                         continue;
                     }
@@ -270,7 +276,7 @@ public partial class MainViewModel : ObservableObject
                     string key = parts[0].Trim();
                     string value = parts[1].Trim();
 
-                    Log($"Key: {key}, Value: {value}");
+                    //Log($"Key: {key}, Value: {value}");
 
                     switch (key)
                     {

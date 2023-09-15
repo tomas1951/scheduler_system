@@ -8,8 +8,8 @@ public class TaskMessage : BaseMessage
     public string ID { get; set; }
     public string Name { get; set; }
     public string UserID { get; set; }
-    public string bucketId { get; set; }
-    public Enums.TaskStatus Status { get; set; }
+    public string BucketId { get; set; }
+    public Enums.SchedulerTaskStatus Status { get; set; }
     public int Priority { get; set; }
     public DateTime TimeCreated { get; set; }
     public string ExeFilePath { get; set; }
@@ -23,14 +23,14 @@ public class TaskMessage : BaseMessage
     };
 
     public TaskMessage(string iD, string name, string userID, string bucketId, 
-                       Enums.TaskStatus status, int priority, DateTime timeCreated, 
+                       Enums.SchedulerTaskStatus status, int priority, DateTime timeCreated, 
                        string exeFilePath, string inputFilesPath, string outputFilesPath, 
                        string operatingSystem)
     {
         ID = iD;
         Name = name;
         UserID = userID;
-        this.bucketId = bucketId;
+        BucketId = bucketId;
         Status = status;
         Priority = priority;
         TimeCreated = timeCreated;
@@ -45,8 +45,8 @@ public class TaskMessage : BaseMessage
         ID = "DefaultID";
         Name = "DefaultName";
         UserID = "DefaultUserID";
-        bucketId = "DefaultBucketID";
-        Status = Enums.TaskStatus.Waiting;
+        BucketId = "DefaultBucketID";
+        Status = Enums.SchedulerTaskStatus.Waiting;
         Priority = 0;
         TimeCreated = DateTime.Now;
         ExeFilePath = "";

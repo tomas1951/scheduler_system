@@ -55,7 +55,6 @@ public class SchedulerClient : ISchedulerClient
         }
         catch (SocketException)
         {
-            //Log($"Server is offline.");
             status.ServerConnection = "Server is offline";
             exceptionCaught = true;
         }
@@ -185,6 +184,7 @@ public class SchedulerClient : ISchedulerClient
                     else if (json_msg is TaskMessage)
                     {
                         PrintMessage(TcpClient, (TaskMessage)json_msg);
+                        ParseTheTask((TaskMessage) json_msg);
                     }
                     else
                     {
@@ -263,6 +263,49 @@ public class SchedulerClient : ISchedulerClient
         catch (Exception ex)
         {
             Log($"Exception: {ex.Message} {ex.GetType()}");
+        }
+    }
+
+    // Parse the task
+    // Parses task message into a SchedulerTask instance. At success, it will send a 
+    // confirmation message to the client. Otherwise, it sends error message.
+    public void ParseTheTask(TaskMessage msg)
+    {
+        // parse the task
+        SchedulerTask newTask;
+        try
+        {
+            newTask = new SchedulerTask();
+            newTask.ID = msg.ID;
+            newTask.Name = msg.Name;
+            newTask.UserID = msg.UserID;
+            newTask.BucketId = msg.BucketId;
+            newTask.Status = SharedResources.Enums.SchedulerTaskStatus.Waiting;
+            newTask.Priority = msg.Priority;
+            newTask.TimeCreated = msg.TimeCreated;
+            newTask.ExeFilePath = msg.ExeFilePath;
+            newTask.InputFilesPath = msg.InputFilesPath;
+            newTask.OutputFilesPath = msg.OutputFilesPath;
+            newTask.OperatingSystem = msg.OperatingSystem;
+        }
+        catch (Exception ex)
+        {
+            Log($"Exception while parsing task - {ex.GetType} {ex.Message}");
+            return;
+        }
+        // send confirmation message
+        ConfirmationMessage conf = new ConfirmationMessage(msg.ID);
+        SendMessage(conf);
+        // save and run the task
+        CurrentTask = newTask;
+        CurrentTask.Status = SchedulerTaskStatus.Waiting;
+        try
+        {
+            CurrentTask.ExecuteTask();
+        }
+        catch (Exception ex)
+        {
+            Log($"Exception while starting a task: {ex.GetType()} {ex.Message}");
         }
     }
 }

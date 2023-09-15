@@ -149,21 +149,31 @@ public class Server : IServer
         {
             PrintMessage(message.Client, (StatusMessage)json_msg);
         }
+        else if (json_msg is ConfirmationMessage)
+        {
+            PrintMessage(message.Client, (ConfirmationMessage)json_msg);
+        }
         else
         {
             PrintMessage(message.Client, json_msg);
         }
     }
 
-    private static void PrintMessage(TcpClient client, StatusMessage message)
+    private static void PrintMessage(TcpClient client, StatusMessage msg)
     {
         Console.WriteLine(string.Format("Host: {0}, Type: Status, Content: {1}",
-            GetClientIP(client), message.CurrentStatus));
+            GetClientIP(client), msg.CurrentStatus));
     }
 
-    private static void PrintMessage(TcpClient client, BaseMessage message)
+    private static void PrintMessage(TcpClient client, BaseMessage msg)
     {
         Console.WriteLine($"Host: {GetClientIP(client)}, Type: Base, Content: Empty");
+    }
+
+    private static void PrintMessage(TcpClient client, ConfirmationMessage msg)
+    {
+        Console.WriteLine($"Host: {GetClientIP(client)}, Type: Confirmation, " +
+            $"Content: {msg.TaskID}");
     }
 
     private static string GetClientIP(TcpClient client)
@@ -222,8 +232,7 @@ public class Server : IServer
         }
 
         TaskMessage newTask = new TaskMessage();
-        newTask.ExeFilePath = @"C:\ProgramData\Microsoft\Windows\Start Menu\Programs
-                                \Audacity.lnk";
+        newTask.ExeFilePath = @"C:\Program Files\Mozilla Firefox\firefox.exe";
 
         SendMessageToClient(client, newTask);
     }

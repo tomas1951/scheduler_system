@@ -1,7 +1,0 @@
-# Format is 
-ServerIP = 170.20.1.45
-Port = 1234
-
-OperatingSystem = Windows
-Cluster = WindowsTestingCluster
-ClientName = Testing01
