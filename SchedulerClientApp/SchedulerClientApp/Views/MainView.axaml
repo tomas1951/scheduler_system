@@ -12,7 +12,8 @@
   
   <Design.DataContext>
     <!-- This only sets the DataContext for the previewer in an IDE,
-         to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+         to set the actual DataContext for runtime, set the DataContext property in 
+         code(look at App.axaml.cs) -->
     <vm:MainViewModel />
   </Design.DataContext>
  
@@ -33,8 +34,8 @@
   </UserControl.Styles>
 
   <!-- MAIN WINDOW -->
-  <Grid RowDefinitions="Auto, *, Auto, Auto"
-        Background="{DynamicResource MediumGrayBrush}">
+  <Grid RowDefinitions="Auto, *, Auto, Auto">
+        <!-- Background="{DynamicResource MediumGrayBrush}"> -->
 
     <!-- Status panel-->
     <Grid
