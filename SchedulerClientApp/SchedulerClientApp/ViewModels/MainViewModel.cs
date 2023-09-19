@@ -23,23 +23,25 @@ public partial class MainViewModel : ObservableObject
     // Note: Capital letters properties are auto-generated and using non-capital
     // variables in code will lead to errors.
     [ObservableProperty]
-    private string serverConnectionLabel = "";
+    private string serverConnectionLabel = string.Empty;
     [ObservableProperty]
     private ClientStatus clientStatusLabel = ClientStatus.Disconnected;
     [ObservableProperty]
-    private string taskAssignedLabel = "";
+    private string taskAssignedLabel = string.Empty;
     [ObservableProperty]
     private SchedulerTaskStatus taskStatusLabel = SchedulerTaskStatus.NoAssignedTask;
     [ObservableProperty]
-    private string operatingSystemLabel = "";
+    private string operatingSystemLabel = string.Empty;
     [ObservableProperty]
-    private string clusterLabel = "";
+    private string clusterLabel = string.Empty;
     [ObservableProperty]
-    private string clientNameLabel = "";
+    private string clientNameLabel = string.Empty;
     [ObservableProperty]
-    private string clientIPLabel = "";
+    private string clientIPLabel = string.Empty;
     [ObservableProperty]
     private string clientLogList = string.Empty;
+    [ObservableProperty]
+    private string statusLabel = string.Empty;
 
     // Class holding local changeable copies of the ui labels
     public StatusParameters Status { get; set; } = new StatusParameters
