@@ -1,4 +1,4 @@
-﻿    using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using SchedulerClientApp.Services;
@@ -28,7 +28,7 @@ public partial class App : Application
             var logService = new LogService(mainViewModel);
 
         }
- 
+
         //else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
         //{
         //    singleViewPlatform.MainView = new MainView

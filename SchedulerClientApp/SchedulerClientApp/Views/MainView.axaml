@@ -6,13 +6,12 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:SchedulerClientApp.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             Width="800"
-             Height="450"
              x:CompileBindings="True">
   
   <Design.DataContext>
     <!-- This only sets the DataContext for the previewer in an IDE,
-         to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+         to set the actual DataContext for runtime, set the DataContext property in 
+         code(look at App.axaml.cs) -->
     <vm:MainViewModel />
   </Design.DataContext>
  
@@ -33,109 +32,125 @@
   </UserControl.Styles>
 
   <!-- MAIN WINDOW -->
-  <Grid RowDefinitions="Auto, *, Auto, Auto"
-        Background="{DynamicResource MediumGrayBrush}">
+  <Grid RowDefinitions="Auto, *, Auto, Auto">
 
-    <!-- Status panel-->
+    <!-- 1. Row: STATUS PANEL -->
     <Grid
       Grid.Row="0"
       Height="100"
-      ColumnDefinitions="*, *"
-      Margin="10">
+      ColumnDefinitions="*, *">
 
-      <!-- Status panel - status information -->
+      <!-- Left status panel side -->
       <Grid
         Grid.Column="0"
-        ColumnDefinitions="*, *"
-        RowDefinitions="*, *, *, *">
+        ColumnDefinitions="4*, 6*"
+        RowDefinitions="*, *, *, *"
+        Margin="10, 5, 10, 0">
         <Label Grid.Row="0" Grid.Column="0"> Server connection:</Label>
-        <Label Content="{Binding ServerConnection}" Foreground="Green"
+        <Label Content="{Binding ServerConnectionLabel}" Foreground="Green"
                Grid.Row="0" Grid.Column="1" />
+        
         <Label Grid.Row="1" Grid.Column="0"> Client status: </Label>
-        <Label Content="{Binding ClientStatus}" Grid.Row="1" Grid.Column="1" />
+        <Label Content="{Binding ClientStatusLabel}" Grid.Row="1" Grid.Column="1" />
+        
         <Label Grid.Row="2" Grid.Column="0"> Task assigned: </Label>
-        <Label Content="{Binding TaskAssigned}" Grid.Row="2" Grid.Column="1" />
+        <Label Content="{Binding TaskAssignedLabel}" Grid.Row="2" Grid.Column="1" />
+        
         <Label Grid.Row="3" Grid.Column="0"> Task status: </Label>
-        <Label Content="{Binding TaskStatus}" Grid.Row="3" Grid.Column="1" />
+        <Label Content="{Binding TaskStatusLabel}" Grid.Row="3" Grid.Column="1" />
       </Grid>
 
-      <!-- Status panel - client machine information -->
+      <!-- Right status panel side -->
       <Grid
         Grid.Column="1"
-        ColumnDefinitions="*, *"
-        RowDefinitions="*, *, *, *">
-        <Label Grid.Row="0" Grid.Column="0"> Operating system: </Label>
-        <Label Content="{Binding OperatingSystem}" Grid.Row="0" Grid.Column="1" />
-        <Label Grid.Row="1" Grid.Column="0"> Cluster: </Label>
-        <Label Content="{Binding Cluster}" Grid.Row="1" Grid.Column="1" />
-        <!-- empty label space -->
+        ColumnDefinitions="4*, 6*"
+        RowDefinitions="*, *, *, *"
+        Margin="10, 5, 10, 0">
+        <Label Grid.Row="0" Grid.Column="0"></Label>
+        <Label Grid.Row="0" Grid.Column="1" />
+        
+        <Label Grid.Row="1" Grid.Column="0"></Label>
+        <Label Grid.Row="1" Grid.Column="1" />
+        
         <Label Grid.Row="2" Grid.Column="0"> </Label>
         <Label Grid.Row="2" Grid.Column="1"> </Label>
-        <!-- empty label space -->
+        
         <Label Grid.Row="3" Grid.Column="0"> </Label>
         <Label Grid.Row="3" Grid.Column="1"> </Label>
       </Grid>
+      
     </Grid>
 
-    <!-- LOG WINDOW -->
+    <!-- 2. Row: LOG WINDOW -->
     <Border
       Grid.Row="1"
       Margin="5"
-      Height="230"
       BorderThickness="1"
       BorderBrush="Black"
       CornerRadius="10">
       <ScrollViewer
         Name="scrollViewer1"
         Margin="10, 0, 10, 0"
-        Height="230"
         VerticalScrollBarVisibility="Auto"
         HorizontalScrollBarVisibility="Auto">
         <TextBlock
           Name="logTextBlock"
           VerticalAlignment="Top"
           TextWrapping="Wrap"
-          Text="{Binding ReceivedMessages}">
+          Text="{Binding ClientLogList}">
         </TextBlock>
       </ScrollViewer>
     </Border>
     
-    <!-- CLIENT INFO -->
+    <!-- 3. Row: CLIENT INFO -->
     <Grid
       Grid.Row="2"
       Height="50"
       ColumnDefinitions="*, *">
+      
+      <!-- Left client info side -->
       <Grid
         Grid.Column="0"
         RowDefinitions="*, *"
-        ColumnDefinitions="*, *"
-        Width="400"
-        Margin="10, 0, 0, 0">
+        ColumnDefinitions="4*, 6*"
+        Margin="10, 0, 10, 0">
         <Label Grid.Row="0" Grid.Column="0"> Client name: </Label>
-        <Label Content="{Binding ClientName}" Grid.Row="0" Grid.Column="1" />
+        <Label Content="{Binding ClientNameLabel}" Grid.Row="0" Grid.Column="1" />
+        
         <Label Grid.Row="1" Grid.Column="0"> Client IP: </Label>
-        <Label Content="{Binding ClientIP}" Grid.Row="1" Grid.Column="1" />
+        <Label Content="{Binding ClientIPLabel}" Grid.Row="1" Grid.Column="1" />
       </Grid>
 
-      <!-- empty space -->
+      <!-- Right client info side -->
       <Grid
-        Grid.Column="1">
+        Grid.Column="1"
+        RowDefinitions="*, *"
+        ColumnDefinitions="4*, 6*"
+        Margin="10, 0, 10, 0">
+        <Label Grid.Row="0" Grid.Column="0"> Operating system: </Label>
+        <Label Content="{Binding OperatingSystemLabel}" Grid.Row="0" Grid.Column="1" />
+        
+        <Label Grid.Row="1" Grid.Column="0"> Cluster: </Label>
+        <Label Content="{Binding ClusterLabel}" Grid.Row="1" Grid.Column="1" />
       </Grid>
     </Grid>
 
-    <!-- BUTTONS BAR -->
+    <!-- 4. Row: STATUS and BUTTON BAR -->
     <Grid
       Grid.Row="3"
       Height="40"
-      ColumnDefinitions="Auto, *, Auto">
-      <!-- More details button -->
+      ColumnDefinitions="3*, 13*, 3*, 3*">
+      <Label Grid.Column="0" Margin="10, 10, 0, 0"> Status: </Label>
+      <Label Grid.Column="1" Margin="0, 10, 0, 0" 
+             Content="{Binding StatusLabel}" />
+      
       <Button 
         Command="{Binding MoreDetailsButtonCommand}"
-        Grid.Column="0"> More details </Button>
-      <!-- Reconnect button -->
+        Grid.Column="2"> More details </Button>
+      
       <Button 
         Command="{Binding ReconnectButtonCommand}"
-        Grid.Column="2"> Reconnect </Button>
+        Grid.Column="3"> Reconnect </Button>
     </Grid>
   </Grid>
 

@@ -1,7 +1,8 @@
 ﻿namespace SharedResources.Enums;
 
-public enum TaskStatus
+public enum SchedulerTaskStatus
 {
+    NoAssignedTask,
     Waiting,
     InProgress,
     Done,

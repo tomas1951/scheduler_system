@@ -1,8 +1,8 @@
-﻿using System.Net.Sockets;
+﻿using Newtonsoft.Json;
+using SharedResources.Messages;
+using System.Net.Sockets;
 using System.Text;
 using System.Timers;
-using Newtonsoft.Json;
-using SharedResources.Messages;
 
 namespace SchedulerServerApp.ServerModule;
 
@@ -18,7 +18,8 @@ public class Server : IServer
         new ManualResetEvent(false);
 
     // Listening timer
-    public System.Timers.Timer ListeningTimer { get; set; }
+    public System.Timers.Timer ListenForClientsTimer { get; set; }
+    private const int ListenForClientsTimerInterval = 5000;
 
     // Handlers
     public delegate void MessageReceivedHandler(object? sender, MessageFromClient m);
@@ -40,26 +41,27 @@ public class Server : IServer
         Listener.Start();
         IsStarted = true;
 
-        ListeningTimer = new System.Timers.Timer(5000);
-        SetListeningTimer();
+        ListenForClientsTimer = new System.Timers.Timer(ListenForClientsTimerInterval);
+        SetListenForClientsTimer();
         ListenForNewClients();
 
         Console.WriteLine("Server is online.");
     }
 
-    public void IsOnline()
-    {
+    //public void IsOnline()
+    //{
 
+    //}
+
+    private void SetListenForClientsTimer()
+    {
+        ListenForClientsTimer.Elapsed += new ElapsedEventHandler(
+            OnListenForClientsTimer);
+        ListenForClientsTimer.AutoReset = true;
+        ListenForClientsTimer.Enabled = true;
     }
 
-    private void SetListeningTimer()
-    {
-        ListeningTimer.Elapsed += new ElapsedEventHandler(OnListeningTimer);
-        ListeningTimer.AutoReset = true;
-        ListeningTimer.Enabled = true;
-    }
-
-    public void OnListeningTimer(object? source, ElapsedEventArgs e)
+    public void OnListenForClientsTimer(object? source, ElapsedEventArgs e)
     {
         ListenForNewClients();
     }
@@ -75,6 +77,8 @@ public class Server : IServer
 
     public void Stop()
     {
+        // NOTE - would be nicer to rework this function to actively find out whether 
+        // connection is alive
         if (IsStarted)
         {
             Listener?.Stop();
@@ -112,7 +116,7 @@ public class Server : IServer
                     new MessageFromClient(client, message));
             }
         }
-        catch (Exception e)
+        catch (Exception)
         {
             if (client is null)
             {
@@ -120,10 +124,9 @@ public class Server : IServer
             }
             else
             {
-                Console.Write($"Client {GetClientIP(client)} left the server. " +
-                    $"(Unable to read data) ");
-                Console.WriteLine($"Exception while reading client " +
-                    $"{GetClientIP(client)} message: {e.Message}");
+                Console.WriteLine($"Client {GetClientIP(client)} left the server.");
+                //Console.WriteLine($"Exception while reading client " +
+                //    $"{GetClientIP(client)} message: {e.Message}");
                 DisconnectClient(client);
                 ListenForNewClients();
             }
@@ -146,21 +149,31 @@ public class Server : IServer
         {
             PrintMessage(message.Client, (StatusMessage)json_msg);
         }
+        else if (json_msg is ConfirmationMessage)
+        {
+            PrintMessage(message.Client, (ConfirmationMessage)json_msg);
+        }
         else
         {
             PrintMessage(message.Client, json_msg);
         }
     }
 
-    private static void PrintMessage(TcpClient client, StatusMessage message)
+    private static void PrintMessage(TcpClient client, StatusMessage msg)
     {
         Console.WriteLine(string.Format("Host: {0}, Type: Status, Content: {1}",
-            GetClientIP(client), message.CurrentStatus));
+            GetClientIP(client), msg.CurrentStatus));
     }
 
-    private static void PrintMessage(TcpClient client, BaseMessage message)
+    private static void PrintMessage(TcpClient client, BaseMessage msg)
     {
         Console.WriteLine($"Host: {GetClientIP(client)}, Type: Base, Content: Empty");
+    }
+
+    private static void PrintMessage(TcpClient client, ConfirmationMessage msg)
+    {
+        Console.WriteLine($"Host: {GetClientIP(client)}, Type: Confirmation, " +
+            $"Content: {msg.TaskID}");
     }
 
     private static string GetClientIP(TcpClient client)
@@ -172,6 +185,7 @@ public class Server : IServer
         }
         else
         {
+            // NOTE - Add name of a disconncting client here
             return "--name unknown--";
         }
     }
@@ -207,6 +221,8 @@ public class Server : IServer
 
     public void TestSendTask()
     {
+        Console.WriteLine("Sending testing task to the last connected client.");
+
         TcpClient? client = ConnectedClients.LastOrDefault();
 
         if (client is null)
@@ -216,16 +232,16 @@ public class Server : IServer
         }
 
         TaskMessage newTask = new TaskMessage();
-        newTask.ExeFilePath = @"C:\ProgramData\Microsoft\Windows\Start Menu\Programs
-                                \Audacity.lnk";
+        newTask.ExeFilePath = @"C:\Program Files\Mozilla Firefox\firefox.exe";
 
         SendMessageToClient(client, newTask);
     }
 
     public void TestDisconnect()
     {
+        Console.WriteLine("Disconnecting last connected client.");
         TcpClient? client = ConnectedClients.LastOrDefault();
-        
+
         if (client is null)
         {
             Console.WriteLine("No connected clients.");
@@ -240,18 +256,4 @@ public class Server : IServer
         ConnectedClients.Remove(client);
         client?.Close();
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
