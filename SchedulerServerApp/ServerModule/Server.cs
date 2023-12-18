@@ -1,4 +1,6 @@
 ﻿using Newtonsoft.Json;
+using SchedulerServerApp.DBModule;
+using SchedulerServerApp.SchedulerModule;
 using SharedResources.Messages;
 using System.Net.Sockets;
 using System.Text;
@@ -12,6 +14,7 @@ public class Server : IServer
     public bool IsStarted { get; set; }
     public TcpListener Listener { get; set; }
     public List<TcpClient> ConnectedClients { get; set; }
+    public SchedulerEngine Scheduler { get; set; }
 
     // Thread signal
     public static ManualResetEvent tcpClientConnected =
@@ -19,7 +22,7 @@ public class Server : IServer
 
     // Listening timer
     public System.Timers.Timer ListenForClientsTimer { get; set; }
-    private const int ListenForClientsTimerInterval = 5000;
+    private const int ListenForClientsTimerInterval = 5 * 1000;
 
     // Handlers
     public delegate void MessageReceivedHandler(object? sender, MessageFromClient m);
@@ -31,7 +34,10 @@ public class Server : IServer
         TypeNameHandling = TypeNameHandling.Auto
     };
 
-    public Server(int port)
+    // Database
+    public DBCommunication DB { get; set; }
+
+    public Server(int port, DBCommunication db)
     {
         Port = port;
         ConnectedClients = new List<TcpClient>();
@@ -45,13 +51,12 @@ public class Server : IServer
         SetListenForClientsTimer();
         ListenForNewClients();
 
+        DB = db;
+
+        Scheduler = new SchedulerEngine(db);
+
         Console.WriteLine("Server is online.");
     }
-
-    //public void IsOnline()
-    //{
-
-    //}
 
     private void SetListenForClientsTimer()
     {
