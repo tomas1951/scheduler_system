@@ -36,3 +36,5 @@ C:\Users\Admin\Desktop\scheduler_system\SchedulerServerApp\obj\Debug\net7.0\refi
 C:\Users\Admin\Desktop\scheduler_system\SchedulerServerApp\obj\Debug\net7.0\SchedulerServerApp.pdb
 C:\Users\Admin\Desktop\scheduler_system\SchedulerServerApp\obj\Debug\net7.0\SchedulerServerApp.genruntimeconfig.cache
 C:\Users\Admin\Desktop\scheduler_system\SchedulerServerApp\obj\Debug\net7.0\ref\SchedulerServerApp.dll
+C:\Users\Admin\Desktop\scheduler_system\SchedulerServerApp\bin\Debug\net7.0\Microsoft.Extensions.Logging.Abstractions.dll
+C:\Users\Admin\Desktop\scheduler_system\SchedulerServerApp\bin\Debug\net7.0\Npgsql.dll

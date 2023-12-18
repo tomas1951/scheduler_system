@@ -1,4 +1,5 @@
-﻿using SchedulerServerApp.ServerModule;
+﻿using SchedulerServerApp.DBModule;
+using SchedulerServerApp.ServerModule;
 
 namespace SchedulerServerApp;
 
@@ -9,7 +10,8 @@ internal class Program
 {
     private static event EventHandler<string>? ReceivedCommandHandler;
     private const int PortNO = 1234;
-    public static Server Server { get; set; } = new Server(PortNO);
+    public static Server Server { get; set; }
+    public static DBCommunication DB {get; set; }
 
     static void Main(string[] args)
     {
@@ -22,6 +24,17 @@ internal class Program
         ReceivedCommandHandler += OnReceivedCommand;
         Thread commandsThead = new Thread(ReadConsoleCommands);
         commandsThead.Start();
+        
+        // Start the scheduler
+        string host = "hpcmaster.local.czechglobe.cz";
+        string username = "scheduler";
+        string password = "asdf";
+        string database = "scheduler";
+
+        DB = new DBCommunication(host, username, password, database);
+
+        // Start the Scheduler Server
+        Server = new Server(PortNO, DB);
     }
 
     private static void ReadConsoleCommands()
@@ -56,6 +69,9 @@ internal class Program
                 break;
             case "online":
                 // TODO
+                break;
+            case "test create task":
+                DB.TestCreateRandomTask();
                 break;
             default:
                 Console.WriteLine("This command does not exist. Get some help.");

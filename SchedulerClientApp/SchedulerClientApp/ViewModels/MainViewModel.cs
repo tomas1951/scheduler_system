@@ -107,9 +107,9 @@ public partial class MainViewModel : ObservableObject
         SetStatusTimer();
     }
 
-    /***
-    Handler functions
-    ***/
+
+    #region Handler functions
+
     public void InitializeHandlers()
     {
         // More Detains Button Handler
@@ -118,9 +118,11 @@ public partial class MainViewModel : ObservableObject
         ReconnectButtonCommand = ReactiveCommand.Create(OnReconnectButtonPressed);
     }
 
-    /***
-    UI labels sync (test)
-    ***/
+    #endregion Handler functions
+
+
+    #region UI labels sync (test)
+    
     public void SetUILabelsSyncTimer()
     {
         UILabelsSyncTimer = new Timer(UILabelsSyncTimerInterval);
@@ -152,9 +154,11 @@ public partial class MainViewModel : ObservableObject
         ClientIPLabel = Status.ClientIP;
     }
 
-    /***
-    Reconnecting Timer functions
-    ***/
+    #endregion UI labels sync (test)
+
+
+    #region Reconnecting Timer functions
+
     private void SetReconnectingTimer()
     {
         ReconnectingTimer = new Timer(ReconnectingTimerInterval);
@@ -179,9 +183,11 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
-    /***
-    Status Timer functions
-    ***/
+    #endregion Reconnecting Timer functions
+
+
+    #region Status Timer functions
+
     private void SetStatusTimer()
     {
         StatusTimer = new Timer(StatusTimerInterval);
@@ -197,10 +203,12 @@ public partial class MainViewModel : ObservableObject
             Client.SendStatusMessage();
         }
     }
+    
+    #endregion Status Timer functions
 
-    /***
-    BUTTON FUNCTIONS
-    ***/
+
+    #region BUTTON FUNCTIONS
+
     // More Details button pressed function.
     private async Task OnMoreDetailsButtonPressed()
     {
@@ -242,10 +250,11 @@ public partial class MainViewModel : ObservableObject
         Client = new SchedulerClient(LogService);
     }
 
+    #endregion BUTTON FUNCTIONS
 
-    /***
-    Load Labels
-    ***/
+
+    #region Load Labels
+
     // Loads a client parameters from the config file.
     public bool LoadClientConfig()
     {
@@ -318,4 +327,6 @@ public partial class MainViewModel : ObservableObject
         }
         return true;
     }
+
+    #endregion Load Labels
 }
