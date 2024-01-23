@@ -16,6 +16,7 @@ public class Server : IServer
     public List<TcpClient> ConnectedClients { get; set; }
     public SchedulerEngine Scheduler { get; set; }
 
+
     // Thread signal
     public static ManualResetEvent tcpClientConnected =
         new ManualResetEvent(false);
@@ -53,7 +54,7 @@ public class Server : IServer
 
         DB = db;
 
-        Scheduler = new SchedulerEngine(db);
+        Scheduler = new SchedulerEngine(db, this);
 
         Console.WriteLine("Server is online.");
     }
@@ -98,7 +99,26 @@ public class Server : IServer
             () => HandleClient(client)
         );
         clientThread.Start();
-        ConnectedClients.Add(client);
+        // TODO - handshake protocol
+
+        // Save client into a DB
+        // TODO - this informtion should be taken from the handshake protocol
+        string ip = client.Client.RemoteEndPoint.ToString(); // 127.0.0.1:50747
+        int indexOfColon = ip.IndexOf(':'); 
+        ip = ip.Substring(0, indexOfColon);
+
+        DBClientMachineModel client_machine = new DBClientMachineModel
+        {
+            Client_name = "New client", // TODO - from handshake (also technical info)
+            IP = ip,
+        };
+
+        // Sync new connection with the DB
+        DB.SaveNewClientToDB(client_machine);
+
+        ConnectedClients.Add(client); // Save with the client handle also client DB ID
+        
+        // TODO - set timer for minitoring status of a client, i. e. uptime
     }
 
     public void HandleClient(TcpClient client)
@@ -152,11 +172,25 @@ public class Server : IServer
         }
         if (json_msg is StatusMessage)
         {
-            PrintMessage(message.Client, (StatusMessage)json_msg);
+            StatusMessage msg = (StatusMessage) json_msg;
+            PrintMessage(message.Client, msg);
+            string ip = GetClientIPShort(message.Client);
+            string status = msg.CurrentStatus;
+            bool task_assigned = msg.CurrentTask;
+            DB.UpdateClientMachineStatus(ip, status, task_assigned);
         }
         else if (json_msg is ConfirmationMessage)
         {
             PrintMessage(message.Client, (ConfirmationMessage)json_msg);
+        }
+        else if (json_msg is TaskFinishedMessage)
+        {
+            TaskFinishedMessage msg = (TaskFinishedMessage) json_msg;
+            PrintMessage(message.Client, (TaskFinishedMessage)json_msg);
+            string id = msg.TaskID;
+            string status = "Done";
+            DateTime time_completed = DateTime.Now;
+            DB.UpdateTaskStatus(id, status, time_completed);
         }
         else
         {
@@ -166,8 +200,8 @@ public class Server : IServer
 
     private static void PrintMessage(TcpClient client, StatusMessage msg)
     {
-        Console.WriteLine(string.Format("Host: {0}, Type: Status, Content: {1}",
-            GetClientIP(client), msg.CurrentStatus));
+        Console.WriteLine($"Host: {GetClientIP(client)}, Type: Status, " +
+            $"Content: {msg.CurrentStatus}, Task: {msg.CurrentTask}");
     }
 
     private static void PrintMessage(TcpClient client, BaseMessage msg)
@@ -181,8 +215,15 @@ public class Server : IServer
             $"Content: {msg.TaskID}");
     }
 
+    private static void PrintMessage(TcpClient client, TaskFinishedMessage msg)
+    {
+        Console.WriteLine($"Host: {GetClientIP(client)}, Type: TaskFinished, " +
+            $"Content: {msg.TaskID}");
+    }
+
     private static string GetClientIP(TcpClient client)
     {
+        // TODO - Note: this code will pruduce ip in template 'ip:port'
         string? name = client?.Client?.RemoteEndPoint?.ToString() ?? null;
         if (name is not null)
         {
@@ -191,6 +232,23 @@ public class Server : IServer
         else
         {
             // NOTE - Add name of a disconncting client here
+            return "--name unknown--";
+        }
+    }
+
+    // Note: this code will pruduce ip in template 'ip'
+    private static string GetClientIPShort(TcpClient client)
+    {
+        string? name = client?.Client?.RemoteEndPoint?.ToString() ?? null;
+        if (name is not null)
+        {
+            int indexOfColon = name.IndexOf(':');
+            return name.Substring(0, indexOfColon);;
+        }
+        else
+        {
+            // NOTE - Add name of a disconncting client here
+            // TODO - implement exception
             return "--name unknown--";
         }
     }
@@ -260,5 +318,22 @@ public class Server : IServer
     {
         ConnectedClients.Remove(client);
         client?.Close();
+    }
+
+    public TcpClient? FindClientHandleByIP(string client_ip)
+    {
+        // TODO - clients are not removed from connected clients, which will bring 
+        // issues when client is reconnected -> 2 instances?
+        
+        foreach (TcpClient client in ConnectedClients)
+        {
+            string ip = GetClientIPShort(client);
+            if (ip == client_ip) 
+            {
+                return client;
+            }
+        }
+        // TODO - notify that client was not found among locally connected clients
+        return null;
     }
 }

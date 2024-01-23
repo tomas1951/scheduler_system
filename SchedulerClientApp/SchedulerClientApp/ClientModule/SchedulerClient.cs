@@ -212,8 +212,11 @@ public class SchedulerClient : ISchedulerClient
             try
             {
                 ClientStatus currentStatus = GetConnectionStatus();
-                StatusMessage message = new StatusMessage(currentStatus.ToString());
-                Log($"Sending status message. Status: {currentStatus}");
+                bool currentTask = CurrentTask is null ? false : true;
+                StatusMessage message = new StatusMessage(
+                    currentStatus.ToString(),
+                    currentTask);
+                Log($"Sending status message. Status: {currentStatus}. Task: {currentTask}");
                 SendMessage(message);
             }
             catch (Exception ex)
@@ -275,11 +278,11 @@ public class SchedulerClient : ISchedulerClient
         SchedulerTask newTask;
         try
         {
-            newTask = new SchedulerTask();
+            newTask = new SchedulerTask(LogService, this);
             newTask.ID = msg.ID;
             newTask.Name = msg.Name;
-            newTask.UserID = msg.UserID;
-            newTask.BucketId = msg.BucketId;
+            newTask.Description = msg.Description;
+            newTask.Group = msg.Group;
             newTask.Status = SharedResources.Enums.SchedulerTaskStatus.Waiting;
             newTask.Priority = msg.Priority;
             newTask.TimeCreated = msg.TimeCreated;
@@ -287,6 +290,8 @@ public class SchedulerClient : ISchedulerClient
             newTask.InputFilesPath = msg.InputFilesPath;
             newTask.OutputFilesPath = msg.OutputFilesPath;
             newTask.OperatingSystem = msg.OperatingSystem;
+            newTask.TimeCompleted = msg.TimeCompleted;
+            newTask.UserID = msg.UserID;
         }
         catch (Exception ex)
         {
@@ -294,7 +299,7 @@ public class SchedulerClient : ISchedulerClient
             return;
         }
         // send confirmation message
-        ConfirmationMessage conf = new ConfirmationMessage(msg.ID);
+        ConfirmationMessage conf = new ConfirmationMessage(msg.ID.ToString());
         SendMessage(conf);
         // save and run the task
         CurrentTask = newTask;
@@ -307,5 +312,10 @@ public class SchedulerClient : ISchedulerClient
         {
             Log($"Exception while starting a task: {ex.GetType()} {ex.Message}");
         }
+    }
+
+    public void DeleteCurrentTask()
+    {
+        CurrentTask = null;
     }
 }
