@@ -3,6 +3,15 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+
+# SchedulerClientApp/SchedulerClientApp/bin/*
+# SchedulerClientApp/SchedulerClientApp/obj/*
+
+# SchedulerClientApp/SharedResources/bin/*
+# SchedulerClientApp/SharedResources/obj/*
+
+
+
 # User-specific files
 *.rsuser
 *.suo
