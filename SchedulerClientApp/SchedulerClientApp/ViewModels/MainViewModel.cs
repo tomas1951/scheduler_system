@@ -67,7 +67,7 @@ public partial class MainViewModel : ObservableObject
 
     // Time of timers in milliseconds
     private const int ReconnectingTimerInterval = 15 * 1000;
-    private const int StatusTimerInterval = 30 * 1000;
+    private const int StatusTimerInterval = 15 * 1000;
     private const int UILabelsSyncTimerInterval = 1 * 1000;
 
     // Server info

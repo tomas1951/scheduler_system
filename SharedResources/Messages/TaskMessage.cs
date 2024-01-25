@@ -5,10 +5,10 @@ namespace SharedResources.Messages;
 [JsonObject(ItemTypeNameHandling = TypeNameHandling.Auto)]
 public class TaskMessage : BaseMessage
 {
-    public string ID { get; set; }
+    public int ID { get; set; }  // TODO - why not integer? 
     public string Name { get; set; }
-    public string UserID { get; set; }
-    public string BucketId { get; set; }
+    public string Description { get; set; }
+    public int Group { get; set; }
     public Enums.SchedulerTaskStatus Status { get; set; }
     public int Priority { get; set; }
     public DateTime TimeCreated { get; set; }
@@ -16,21 +16,34 @@ public class TaskMessage : BaseMessage
     public string InputFilesPath { get; set; }
     public string OutputFilesPath { get; set; }
     public string OperatingSystem { get; set; }
+    public DateTime TimeCompleted { get; set; }
+    public int UserID { get; set; }
+    // TODO - possible missynchronization of this class due to change of properties
 
     private JsonSerializerSettings JsonSettings = new JsonSerializerSettings
     {
         TypeNameHandling = TypeNameHandling.All
     };
 
-    public TaskMessage(string iD, string name, string userID, string bucketId, 
-                       Enums.SchedulerTaskStatus status, int priority, DateTime timeCreated, 
-                       string exeFilePath, string inputFilesPath, string outputFilesPath, 
-                       string operatingSystem)
+    public TaskMessage(
+        int iD,
+        string name,
+        string description,
+        int group, 
+        Enums.SchedulerTaskStatus status,
+        int priority, 
+        DateTime timeCreated, 
+        string exeFilePath, 
+        string inputFilesPath, 
+        string outputFilesPath, 
+        string operatingSystem, 
+        DateTime timeCompleted,
+        int userID)
     {
         ID = iD;
         Name = name;
-        UserID = userID;
-        BucketId = bucketId;
+        Description = description;
+        Group = group;
         Status = status;
         Priority = priority;
         TimeCreated = timeCreated;
@@ -38,21 +51,24 @@ public class TaskMessage : BaseMessage
         InputFilesPath = inputFilesPath;
         OutputFilesPath = outputFilesPath;
         OperatingSystem = operatingSystem;
+        TimeCompleted = timeCompleted;
+        UserID = userID;
     }
 
     public TaskMessage()
     {
-        ID = "DefaultID";
+        ID = 999;
         Name = "DefaultName";
-        UserID = "DefaultUserID";
-        BucketId = "DefaultBucketID";
+        Description = "Default description";
+        Group = 999;
         Status = Enums.SchedulerTaskStatus.Waiting;
-        Priority = 0;
+        Priority = 5;
         TimeCreated = DateTime.Now;
-        ExeFilePath = "";
-        InputFilesPath = "";
-        OutputFilesPath = "";
+        ExeFilePath = "path.exe";
+        InputFilesPath = "/input_path/";
+        OutputFilesPath = "/output_path/";
         OperatingSystem = "DefaultOS";
+        UserID = 999;
     }
 
     public override string GetSerializedString()

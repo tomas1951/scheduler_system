@@ -27,7 +27,7 @@ internal class Program
         
         // Start the scheduler
         string host = "hpcmaster.local.czechglobe.cz";
-        string username = "scheduler";
+        string username = "postgres"; // change back to scheduler later
         string password = "asdf";
         string database = "scheduler";
 

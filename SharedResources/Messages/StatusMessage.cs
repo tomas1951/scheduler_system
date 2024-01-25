@@ -6,14 +6,23 @@ namespace SharedResources.Messages;
 public class StatusMessage : BaseMessage
 {
     public string CurrentStatus { get; set; }
+    public bool CurrentTask { get; set; }
+
     private JsonSerializerSettings JsonSettings = new JsonSerializerSettings
     {
         TypeNameHandling = TypeNameHandling.All
     };
 
-    public StatusMessage(string currentStatus) : base()
+    //public StatusMessage(string currentStatus) : base()
+    //{
+    //    CurrentStatus = currentStatus;
+    //    CurrentTask = false;
+    //}
+
+    public StatusMessage(string currentStatus, bool currentTask) : base()
     {
         CurrentStatus = currentStatus;
+        CurrentTask = currentTask;
     }
 
     public override string GetSerializedString()
